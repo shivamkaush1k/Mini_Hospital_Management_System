@@ -326,3 +326,4 @@ API_DOCUMENTATION.md
 This project was developed solely for the Backend Engineering Shortlisting Task and is intended for educational and evaluation purposes.
 =======
 # Mini_Hospital_Managmnt_System
+# Mini_Hospital_Management_System
