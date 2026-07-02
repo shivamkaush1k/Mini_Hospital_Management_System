@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Appointment Booked{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+<div class="col-lg-6">
+
+<div class="card shadow text-center">
+
+<div class="card-body p-5">
+
+<div class="text-success mb-4">
+
+<i class="bi bi-check-circle-fill" style="font-size:80px;"></i>
+
+</div>
+
+<h2>
+
+Appointment Booked Successfully!
+
+</h2>
+
+<p>
+
+Your appointment has been scheduled successfully.
+
+</p>
+
+<a href="{% url 'appointments:list' %}"
+
+class="btn btn-primary">
+
+View My Appointments
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

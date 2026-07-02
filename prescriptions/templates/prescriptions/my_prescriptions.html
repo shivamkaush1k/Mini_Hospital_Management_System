@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}My Prescriptions{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'accounts:home' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item active">My Prescriptions</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0">My Prescriptions</h4>
+    </div>
+    <div class="card-body">
+        {% if prescriptions %}
+            <div class="list-group">
+                {% for prescription in prescriptions %}
+                    <a href="{% url 'prescriptions:prescription_detail' prescription.pk %}"
+                       class="list-group-item list-group-item-action">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>{{ prescription.diagnosis }}</strong><br>
+                                <small>Doctor: {{ prescription.appointment.slot.doctor.user.get_full_name }}</small>
+                            </div>
+                            <small>{{ prescription.created_at|date:"d M Y" }}</small>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="mb-0">No prescriptions found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

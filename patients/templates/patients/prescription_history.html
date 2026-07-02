@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Prescriptions{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar">
+  <div class="sidebar-section-label">Patient Menu</div>
+  <a class="sidebar-link" href="{% url 'patient_dashboard' %}"><i class="fa fa-gauge"></i> Dashboard</a>
+  <a class="sidebar-link" href="{% url 'doctor_list' %}"><i class="fa fa-user-doctor"></i> Find Doctors</a>
+  <a class="sidebar-link" href="{% url 'patient_appointments' %}"><i class="fa fa-calendar"></i> Appointments</a>
+  <a class="sidebar-link active" href="{% url 'patient_prescriptions' %}"><i class="fa fa-file-prescription"></i> Prescriptions</a>
+  <a class="sidebar-link" href="{% url 'patient_medical_history' %}"><i class="fa fa-clock-rotate-left"></i> Medical History</a>
+  <div class="sidebar-section-label mt-2">Account</div>
+  <a class="sidebar-link" href="{% url 'patient_profile' %}"><i class="fa fa-circle-user"></i> My Profile</a>
+  <a class="sidebar-link text-danger" href="{% url 'logout' %}"><i class="fa fa-right-from-bracket"></i> Sign Out</a>
+</aside>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'patient_dashboard' %}" class="text-decoration-none text-muted">Dashboard</a></li>
+    <li class="breadcrumb-item active">Prescriptions</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1><i class="fa fa-file-prescription me-2 text-primary"></i>My Prescriptions</h1>
+  <p style="color:var(--muted);margin:0;">View and download all your medical prescriptions.</p>
+</div>
+
+{% if prescriptions %}
+<div class="row g-4">
+  {% for rx in prescriptions %}
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100" style="border-top:3px solid var(--primary);">
+      <div class="card-body p-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <div class="fw-bold" style="font-size:13.5px;">Dr. {{ rx.doctor.user.get_full_name }}</div>
+            <div style="font-size:12px;color:var(--muted);">{{ rx.doctor.specialization }}</div>
+          </div>
+          <span style="font-size:11.5px;color:var(--muted);background:var(--bg);padding:.25rem .6rem;border-radius:6px;">
+            {{ rx.created_at|date:"d M Y" }}
+          </span>
+        </div>
+
+        <!-- Diagnosis -->
+        <div class="mb-3 p-3" style="background:var(--primary-light);border-radius:10px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--primary);margin-bottom:4px;">Diagnosis</div>
+          <div style="font-size:13.5px;color:var(--text);">{{ rx.diagnosis|truncatechars:80 }}</div>
+        </div>
+
+        <!-- Medicines -->
+        <div class="mb-3">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Medicines</div>
+          {% if rx.medicines.all %}
+          <ul class="list-unstyled mb-0 d-flex flex-column gap-1">
+            {% for med in rx.medicines.all|slice:":3" %}
+            <li class="d-flex align-items-center gap-2" style="font-size:13px;">
+              <i class="fa fa-capsules" style="color:var(--secondary);font-size:11px;"></i>
+              {{ med.name }} — {{ med.dosage }}
+            </li>
+            {% endfor %}
+            {% if rx.medicines.count > 3 %}
+            <li style="font-size:12px;color:var(--muted);">+ {{ rx.medicines.count|add:"-3" }} more…</li>
+            {% endif %}
+          </ul>
+          {% else %}
+          <div style="font-size:13px;color:var(--muted);">{{ rx.medicines_text|default:"See full prescription"|truncatechars:80 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Follow-up -->
+        {% if rx.follow_up_date %}
+        <div class="mb-3 d-flex align-items-center gap-2" style="font-size:13px;color:var(--muted);">
+          <i class="fa fa-calendar-check" style="color:var(--accent);"></i>
+          Follow-up: <strong style="color:var(--text);">{{ rx.follow_up_date|date:"d M Y" }}</strong>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="d-flex gap-2 mt-3">
+          <a href="{% url 'prescription_detail' rx.pk %}" class="btn btn-outline-primary btn-sm flex-fill">
+            <i class="fa fa-eye me-1"></i>View
+          </a>
+          <a href="{% url 'prescription_pdf' rx.pk %}" class="btn btn-outline-secondary btn-sm flex-fill" target="_blank">
+            <i class="fa fa-download me-1"></i>PDF
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<nav class="mt-4">
+  <ul class="pagination justify-content-center">
+    {% if page_obj.has_previous %}
+    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}"><i class="fa fa-chevron-left"></i></a></li>
+    {% endif %}
+    {% for n in page_obj.paginator.page_range %}
+    <li class="page-item {% if n == page_obj.number %}active{% endif %}">
+      <a class="page-link" href="?page={{ n }}">{{ n }}</a>
+    </li>
+    {% endfor %}
+    {% if page_obj.has_next %}
+    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}"><i class="fa fa-chevron-right"></i></a></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="empty-state card py-5">
+  <i class="fa fa-file-prescription"></i>
+  <h5 class="mt-3">No prescriptions yet</h5>
+  <p style="color:var(--muted);">Your prescriptions will appear here after your doctor visits.</p>
+  <a href="{% url 'doctor_list' %}" class="btn btn-primary mt-2">Book an Appointment</a>
+</div>
+{% endif %}
+{% endblock %}

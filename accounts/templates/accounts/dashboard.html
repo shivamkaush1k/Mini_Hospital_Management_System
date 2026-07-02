@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">
+
+Welcome,
+
+{{ request.user.first_name }}
+
+</h2>
+
+<div class="row">
+
+<div class="col-md-3">
+
+<div class="card shadow text-center">
+
+<div class="card-body">
+
+<h5>Total Appointments</h5>
+
+<h1>{{ total_appointments }}</h1>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="card shadow text-center">
+
+<div class="card-body">
+
+<h5>Completed</h5>
+
+<h1>{{ completed }}</h1>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="card shadow text-center">
+
+<div class="card-body">
+
+<h5>Pending</h5>
+
+<h1>{{ pending }}</h1>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="card shadow text-center">
+
+<div class="card-body">
+
+<h5>Cancelled</h5>
+
+<h1>{{ cancelled }}</h1>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<hr>
+
+<div class="card shadow">
+
+<div class="card-header">
+
+Recent Appointments
+
+</div>
+
+<div class="card-body">
+
+<table class="table table-striped">
+
+<thead>
+
+<tr>
+
+<th>Date</th>
+
+<th>Doctor</th>
+
+<th>Patient</th>
+
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for appointment in appointments %}
+
+<tr>
+
+<td>{{ appointment.date }}</td>
+
+<td>{{ appointment.doctor }}</td>
+
+<td>{{ appointment.patient }}</td>
+
+<td>
+
+<span class="badge bg-success">
+
+{{ appointment.status }}
+
+</span>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+
+<td colspan="4">
+
+No appointments found.
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endblock %}

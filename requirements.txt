@@ -1,0 +1,49 @@
+# Core Framework
+
+Django>=5.2,<6.0
+
+# REST API
+
+djangorestframework>=3.16
+
+# PostgreSQL
+
+psycopg2-binary>=2.9
+
+# Environment Variables
+
+python-dotenv>=1.1
+
+# HTTP Requests
+
+requests>=2.32
+
+# Image Support (Doctor/Patient Profile Images)
+
+Pillow>=11.0
+
+# Google Authentication
+
+google-auth>=2.40
+google-auth-oauthlib>=1.2
+google-auth-httplib2>=0.2
+
+# Google Calendar API
+
+google-api-python-client>=2.170
+
+# Date Utilities
+
+python-dateutil>=2.9
+
+# Timezone Support
+
+tzdata>=2025.2
+
+# Optional Development Tools
+
+ipython>=9.0
+
+# Production WSGI Server (Optional)
+
+gunicorn>=23.0

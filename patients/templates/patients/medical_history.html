@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Medical History{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar">
+  <div class="sidebar-section-label">Patient Menu</div>
+  <a class="sidebar-link" href="{% url 'patients:dashboard' %}"><i class="fa fa-gauge"></i> Dashboard</a>
+  <a class="sidebar-link" href="{% url 'doctors:doctor_list' %}"><i class="fa fa-user-doctor"></i> Find Doctors</a>
+  <a class="sidebar-link" href="{% url 'appointments:my_appointments' %}"><i class="fa fa-calendar"></i> Appointments</a>
+  <a class="sidebar-link" href="{% url 'prescriptions:my_prescriptions' %}"><i class="fa fa-file-prescription"></i> Prescriptions</a>
+  <a class="sidebar-link active" href="{% url 'patients:medical_history' %}"><i class="fa fa-clock-rotate-left"></i> Medical History</a>
+  <div class="sidebar-section-label mt-2">Account</div>
+  <a class="sidebar-link" href="{% url 'accounts:profile' %}"><i class="fa fa-circle-user"></i> My Profile</a>
+  <a class="sidebar-link text-danger" href="{% url 'accounts:logout' %}"><i class="fa fa-right-from-bracket"></i> Sign Out</a>
+</aside>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'patients:dashboard' %}" class="text-decoration-none text-muted">Dashboard</a></li>
+    <li class="breadcrumb-item active">Medical History</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div>
+    <h1><i class="fa fa-clock-rotate-left me-2 text-primary"></i>Medical History</h1>
+    <p style="color:var(--muted);margin:0;">Complete chronological record of your health journey.</p>
+  </div>
+  <button class="btn btn-outline-primary" onclick="window.print()">
+    <i class="fa fa-print me-2"></i>Print
+  </button>
+</div>
+
+<!-- Summary cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#eff6ff;"><i class="fa fa-calendar-check" style="color:var(--primary);"></i></div>
+      <div><div class="stat-value">{{ total_appointments|default:0 }}</div><div class="stat-label">Total Visits</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#ecfdf5;"><i class="fa fa-file-prescription" style="color:var(--secondary);"></i></div>
+      <div><div class="stat-value">{{ total_prescriptions|default:0 }}</div><div class="stat-label">Prescriptions</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#fffbeb;"><i class="fa fa-stethoscope" style="color:#f59e0b;"></i></div>
+      <div><div class="stat-value">{{ unique_doctors|default:0 }}</div><div class="stat-label">Doctors Seen</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#fdf4ff;"><i class="fa fa-notes-medical" style="color:#a855f7;"></i></div>
+      <div><div class="stat-value">{{ unique_diagnoses|default:0 }}</div><div class="stat-label">Diagnoses</div></div>
+    </div>
+  </div>
+</div>
+
+{% if history_items %}
+<!-- Timeline -->
+<div class="row g-4">
+  <div class="col-12 col-lg-8">
+    <div class="card">
+      <div class="card-header py-3 px-4">
+        <h6 class="mb-0"><i class="fa fa-timeline me-2 text-primary"></i>Health Timeline</h6>
+      </div>
+      <div class="card-body p-4">
+        <div class="timeline">
+          {% for item in history_items %}
+          <div class="timeline-item">
+            <div class="timeline-dot" style="{% if item.type == 'appointment' %}background:var(--primary);{% elif item.type == 'prescription' %}background:var(--secondary);{% else %}background:#f59e0b;{% endif %}"></div>
+            <div class="card p-3 ms-2">
+              <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                <div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    {% if item.type == 'appointment' %}
+                    <span class="badge" style="background:var(--primary-light);color:var(--primary);border-radius:6px;font-size:11px;">
+                      <i class="fa fa-calendar me-1"></i>Appointment
+                    </span>
+                    {% elif item.type == 'prescription' %}
+                    <span class="badge" style="background:#ecfdf5;color:var(--secondary);border-radius:6px;font-size:11px;">
+                      <i class="fa fa-file-prescription me-1"></i>Prescription
+                    </span>
+                    {% else %}
+                    <span class="badge" style="background:#fffbeb;color:#92400e;border-radius:6px;font-size:11px;">
+                      <i class="fa fa-notes-medical me-1"></i>Report
+                    </span>
+                    {% endif %}
+                  </div>
+
+                  {% if item.type == 'appointment' %}
+                  <div class="fw-semibold" style="font-size:14px;">
+                    Consultation with Dr. {{ item.object.doctor.user.get_full_name }}
+                  </div>
+                  <div style="font-size:13px;color:var(--muted);">
+                    {{ item.object.doctor.specialization }}
+                    {% if item.object.reason %}· {{ item.object.reason|truncatechars:60 }}{% endif %}
+                  </div>
+                  <div class="mt-2 d-flex gap-2">
+                    <span class="badge {% if item.object.status == 'completed' %}bg-success-subtle text-success{% elif item.object.status == 'cancelled' %}bg-danger-subtle text-danger{% else %}bg-warning-subtle text-warning{% endif %}" style="border-radius:6px;">
+                      {{ item.object.status|capfirst }}
+                    </span>
+                  </div>
+
+                  {% elif item.type == 'prescription' %}
+                  <div class="fw-semibold" style="font-size:14px;">
+                    Prescription by Dr. {{ item.object.doctor.user.get_full_name }}
+                  </div>
+                  <div style="font-size:13px;color:var(--muted);">
+                    Diagnosis: {{ item.object.diagnosis|truncatechars:70 }}
+                  </div>
+                  <a href="{% url 'prescription_detail' item.object.pk %}" class="btn btn-sm btn-outline-primary mt-2" style="font-size:12px;">
+                    View Prescription
+                  </a>
+                  {% endif %}
+                </div>
+                <span style="font-size:12px;color:var(--muted);white-space:nowrap;">{{ item.date|date:"d M Y" }}</span>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar summary -->
+  <div class="col-12 col-lg-4">
+    <!-- Active Conditions -->
+    <div class="card mb-4">
+      <div class="card-header py-3 px-4">
+        <h6 class="mb-0"><i class="fa fa-notes-medical me-2 text-primary"></i>Known Conditions</h6>
+      </div>
+      <div class="card-body p-3">
+        {% if request.user.patient_profile.medical_conditions %}
+        <p style="font-size:13.5px;margin:0;">{{ request.user.patient_profile.medical_conditions }}</p>
+        {% else %}
+        <p style="font-size:13.5px;color:var(--muted);margin:0;">No conditions recorded. <a href="{% url 'patient_profile' %}">Update profile</a></p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Allergies -->
+    <div class="card mb-4">
+      <div class="card-header py-3 px-4">
+        <h6 class="mb-0"><i class="fa fa-triangle-exclamation me-2 text-warning"></i>Allergies</h6>
+      </div>
+      <div class="card-body p-3">
+        {% if request.user.patient_profile.allergies %}
+        <p style="font-size:13.5px;margin:0;color:#92400e;">{{ request.user.patient_profile.allergies }}</p>
+        {% else %}
+        <p style="font-size:13.5px;color:var(--muted);margin:0;">No known allergies. <a href="{% url 'patient_profile' %}">Update</a></p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Quick info -->
+    <div class="card">
+      <div class="card-header py-3 px-4">
+        <h6 class="mb-0"><i class="fa fa-id-card me-2 text-primary"></i>Quick Info</h6>
+      </div>
+      <div class="card-body p-3">
+        <dl class="mb-0" style="font-size:13.5px;">
+          <div class="d-flex justify-content-between py-1 border-bottom">
+            <dt class="fw-normal" style="color:var(--muted);">Blood Group</dt>
+            <dd class="mb-0 fw-semibold">{{ request.user.patient_profile.blood_group|default:"—" }}</dd>
+          </div>
+          <div class="d-flex justify-content-between py-1 border-bottom">
+            <dt class="fw-normal" style="color:var(--muted);">Date of Birth</dt>
+            <dd class="mb-0 fw-semibold">{{ request.user.patient_profile.date_of_birth|date:"d M Y"|default:"—" }}</dd>
+          </div>
+          <div class="d-flex justify-content-between py-1">
+            <dt class="fw-normal" style="color:var(--muted);">Gender</dt>
+            <dd class="mb-0 fw-semibold">{{ request.user.patient_profile.get_gender_display|default:"—" }}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<div class="empty-state card py-5">
+  <i class="fa fa-clock-rotate-left"></i>
+  <h5 class="mt-3">No history yet</h5>
+  <p style="color:var(--muted);">Your medical history will be built as you visit doctors and receive prescriptions.</p>
+  <a href="{% url 'doctors:doctor_list' %}" class="btn btn-primary mt-2">Book Your First Appointment</a>
+</div>
+{% endif %}
+{% endblock %}

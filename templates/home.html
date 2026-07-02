@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Welcome to MediCare{% endblock %}
+
+{% block full_page %}
+<!-- ── Hero ── -->
+<section style="background:linear-gradient(135deg,#0f2c5e 0%,#1a6fc4 60%,#0d9488 100%);min-height:88vh;display:flex;align-items:center;position:relative;overflow:hidden;">
+  <!-- Subtle background shapes -->
+  <div style="position:absolute;top:-80px;right:-80px;width:420px;height:420px;border-radius:50%;background:rgba(255,255,255,.05);"></div>
+  <div style="position:absolute;bottom:-120px;left:-60px;width:340px;height:340px;border-radius:50%;background:rgba(13,148,136,.15);"></div>
+
+  <div class="container py-5">
+    <div class="row align-items-center g-5">
+      <div class="col-12 col-lg-6">
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-4"
+             style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);">
+          <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
+          <span style="font-size:12px;color:#e2e8f0;font-weight:500;">Accepting new patients</span>
+        </div>
+        <h1 style="font-family:'Merriweather',serif;font-size:clamp(2rem,5vw,3.2rem);color:#fff;line-height:1.2;margin-bottom:1.25rem;">
+          Healthcare You Can<br><span style="color:#7dd3fc;">Trust, Every Day</span>
+        </h1>
+        <p style="color:#bfdbfe;font-size:1.05rem;line-height:1.75;max-width:480px;margin-bottom:2rem;">
+          Connecting patients with trusted, experienced specialists. Book appointments, manage prescriptions, and take charge of your health — all in one place.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          {% if user.is_authenticated %}
+          <a href="{% url 'doctors:doctor_list' %}" class="btn btn-light btn-lg px-4" style="border-radius:10px;font-weight:600;color:var(--primary);">
+            <i class="fa fa-calendar-plus me-2"></i>Book Appointment
+          </a>
+          {% if user.profile.role == 'doctor' %}
+          <a href="{% url 'doctors:dashboard' %}" class="btn btn-outline-light btn-lg px-4" style="border-radius:10px;">
+            <i class="fa fa-gauge me-2"></i>My Dashboard
+          </a>
+          {% else %}
+          <a href="{% url 'patients:dashboard' %}" class="btn btn-outline-light btn-lg px-4" style="border-radius:10px;">
+            <i class="fa fa-gauge me-2"></i>My Dashboard
+          </a>
+          {% endif %}
+          {% else %}
+          <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg px-4" style="border-radius:10px;font-weight:600;color:var(--primary);">
+            <i class="fa fa-user-plus me-2"></i>Get Started — Free
+          </a>
+          <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg px-4" style="border-radius:10px;">
+            Sign In
+          </a>
+          {% endif %}
+        </div>
+
+        <!-- Trust badges -->
+        <div class="d-flex flex-wrap gap-4 mt-4">
+          <div class="d-flex align-items-center gap-2" style="color:#bfdbfe;font-size:13px;">
+            <i class="fa fa-shield-halved" style="color:#22c55e;"></i> HIPAA Compliant
+          </div>
+          <div class="d-flex align-items-center gap-2" style="color:#bfdbfe;font-size:13px;">
+            <i class="fa fa-lock" style="color:#22c55e;"></i> Secure & Private
+          </div>
+          <div class="d-flex align-items-center gap-2" style="color:#bfdbfe;font-size:13px;">
+            <i class="fa fa-clock" style="color:#22c55e;"></i> 24×7 Support
+          </div>
+        </div>
+      </div>
+
+      <!-- Illustration / Stats card -->
+      <div class="col-12 col-lg-6 d-none d-lg-flex justify-content-center">
+        <div style="position:relative;">
+          <div style="width:420px;height:420px;border-radius:50%;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;">
+            <div style="width:360px;height:360px;border-radius:50%;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;">
+              <i class="fa-solid fa-hospital" style="font-size:9rem;color:rgba(255,255,255,.15);"></i>
+            </div>
+          </div>
+          <!-- Floating stat cards -->
+          <div style="position:absolute;top:10%;left:-10%;background:#fff;border-radius:14px;padding:.85rem 1.1rem;box-shadow:0 8px 28px rgba(0,0,0,.18);min-width:130px;">
+            <div style="font-size:1.5rem;font-weight:700;color:var(--primary);">{{ total_doctors|default:"50+" }}</div>
+            <div style="font-size:12px;color:var(--muted);">Expert Doctors</div>
+          </div>
+          <div style="position:absolute;bottom:15%;right:-5%;background:#fff;border-radius:14px;padding:.85rem 1.1rem;box-shadow:0 8px 28px rgba(0,0,0,.18);min-width:140px;">
+            <div style="font-size:1.5rem;font-weight:700;color:var(--secondary);">{{ total_patients|default:"2000+" }}</div>
+            <div style="font-size:12px;color:var(--muted);">Happy Patients</div>
+          </div>
+          <div style="position:absolute;top:55%;left:-18%;background:#fff;border-radius:14px;padding:.85rem 1.1rem;box-shadow:0 8px 28px rgba(0,0,0,.18);min-width:120px;">
+            <div style="font-size:1.5rem;font-weight:700;color:#f59e0b;">4.9 <i class="fa fa-star" style="font-size:.9rem;"></i></div>
+            <div style="font-size:12px;color:var(--muted);">Patient Rating</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stats Bar ── -->
+<section style="background:#fff;border-bottom:1px solid var(--border);">
+  <div class="container py-4">
+    <div class="row text-center g-3">
+      {% for stat in hero_stats|default:"" %}
+      <div class="col-6 col-md-3">
+        <div style="font-size:1.75rem;font-weight:700;color:var(--primary);">{{ stat.value }}</div>
+        <div style="font-size:13px;color:var(--muted);">{{ stat.label }}</div>
+      </div>
+      {% empty %}
+      <div class="col-6 col-md-3">
+        <div style="font-size:1.75rem;font-weight:700;color:var(--primary);">50+</div>
+        <div style="font-size:13px;color:var(--muted);">Expert Doctors</div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div style="font-size:1.75rem;font-weight:700;color:var(--secondary);">15+</div>
+        <div style="font-size:13px;color:var(--muted);">Specializations</div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div style="font-size:1.75rem;font-weight:700;color:#f59e0b;">10K+</div>
+        <div style="font-size:13px;color:var(--muted);">Appointments Done</div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div style="font-size:1.75rem;font-weight:700;color:var(--danger);">24×7</div>
+        <div style="font-size:13px;color:var(--muted);">Emergency Care</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── Services ── -->
+<section class="py-5" id="services">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--primary);">What We Offer</span>
+      <h2 style="font-family:'Merriweather',serif;font-size:1.9rem;margin-top:.5rem;color:var(--text);">Comprehensive Healthcare Services</h2>
+      <p style="color:var(--muted);max-width:520px;margin:auto;">From preventive care to complex treatments — we're equipped for every healthcare need.</p>
+    </div>
+    <div class="row g-4">
+      {% for service in services|default:"" %}
+      <div class="col-12 col-sm-6 col-lg-4">
+        <div class="card h-100 p-4">
+          <div style="width:52px;height:52px;border-radius:12px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
+            <i class="{{ service.icon }} text-primary" style="font-size:1.25rem;"></i>
+          </div>
+          <h5 style="font-weight:600;margin-bottom:.5rem;">{{ service.name }}</h5>
+          <p style="color:var(--muted);font-size:13.5px;line-height:1.65;margin:0;">{{ service.description }}</p>
+        </div>
+      </div>
+      {% empty %}
+      {% for svc in "123456" %}
+      <div class="col-12 col-sm-6 col-lg-4">
+        {% if forloop.counter == 1 %}
+        <div class="card h-100 p-4"><div style="width:52px;height:52px;border-radius:12px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;"><i class="fa fa-heart-pulse text-primary" style="font-size:1.25rem;"></i></div><h5 style="font-weight:600;margin-bottom:.5rem;">Cardiology</h5><p style="color:var(--muted);font-size:13.5px;line-height:1.65;margin:0;">Expert cardiac care, ECG, stress tests, and interventional procedures by certified cardiologists.</p></div>
+        {% elif forloop.counter == 2 %}
+        <div class="card h-100 p-4"><div style="width:52px;height:52px;border-radius:12px;background:#ecfdf5;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;"><i class="fa fa-brain" style="font-size:1.25rem;color:var(--secondary);"></i></div><h5 style="font-weight:600;margin-bottom:.5rem;">Neurology</h5><p style="color:var(--muted);font-size:13.5px;line-height:1.65;margin:0;">Advanced diagnosis and treatment of neurological disorders including epilepsy, migraine, and stroke.</p></div>
+        {% elif forloop.counter == 3 %}
+        <div class="card h-100 p-4"><div style="width:52px;height:52px;border-radius:12px;background:#fffbeb;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;"><i class="fa fa-bone" style="font-size:1.25rem;color:#f59e0b;"></i></div><h5 style="font-weight:600;margin-bottom:.5rem;">Orthopedics</h5><p style="color:var(--muted);font-size:13.5px;line-height:1.65;margin:0;">Joint replacement, sports injury treatment, and rehabilitation programs by specialist surgeons.</p></div>
+        {% elif forloop.counter == 4 %}
+        <div class="card h-100 p-4"><div style="width:52px;height:52px;border-radius:12px;background:#fef2f2;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;"><i class="fa fa-baby" style="font-size:1.25rem;color:var(--danger);"></i></div><h5 style="font-weight:600;margin-bottom:.5rem;">Pediatrics</h5><p style="color:var(--muted);font-size:13.5px;line-height:1.65;margin:0;">Complete child healthcare — from newborn screening to adolescent medicine with gentle, caring doctors.</p></div>
+        {% elif forloop.counter == 5 %}
+        <div class="card h-100 p-4"><div style="width:52px;height:52px;border-radius:12px;background:#f0fdf4;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;"><i class="fa fa-eye" style="font-size:1.25rem;color:#22c55e;"></i></div><h5 style="font-weight:600;margin-bottom:.5rem;">Ophthalmology</h5><p style="color:var(--muted);font-size:13.5px;line-height:1.65;margin:0;">Complete eye care including laser surgery, cataract removal, and comprehensive vision testing.</p></div>
+        {% elif forloop.counter == 6 %}
+        <div class="card h-100 p-4"><div style="width:52px;height:52px;border-radius:12px;background:#fdf4ff;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;"><i class="fa fa-flask" style="font-size:1.25rem;color:#a855f7;"></i></div><h5 style="font-weight:600;margin-bottom:.5rem;">Diagnostics & Lab</h5><p style="color:var(--muted);font-size:13.5px;line-height:1.65;margin:0;">State-of-the-art laboratory, radiology, MRI, CT scan, and pathology with fast digital reports.</p></div>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── Featured Doctors ── -->
+<section class="py-5" style="background:var(--bg);">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-5">
+      <div>
+        <span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--primary);">Meet Our Team</span>
+        <h2 style="font-family:'Merriweather',serif;font-size:1.9rem;margin-top:.5rem;color:var(--text);">Our Expert Doctors</h2>
+      </div>
+      <a href="{% url 'doctors:doctor_list' %}" class="btn btn-outline-primary">View All Doctors <i class="fa fa-arrow-right ms-1"></i></a>
+    </div>
+    <div class="row g-4">
+      {% for doctor in featured_doctors %}
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card doctor-card text-center p-4">
+          {% if doctor.profile_picture %}
+          <img src="{{ doctor.profile_picture.url }}" class="avatar-lg mx-auto mb-3" alt="{{ doctor.user.get_full_name }}" />
+          {% else %}
+          <div class="avatar-placeholder mx-auto mb-3" style="width:80px;height:80px;font-size:1.5rem;">
+            {{ doctor.user.first_name|first }}{{ doctor.user.last_name|first }}
+          </div>
+          {% endif %}
+          <h6 class="fw-bold mb-1">Dr. {{ doctor.user.get_full_name }}</h6>
+          <span class="badge bg-primary-subtle text-primary mb-2" style="border-radius:6px;">{{ doctor.specialization }}</span>
+          <div style="font-size:12px;color:var(--muted);" class="mb-3">
+            <i class="fa fa-briefcase me-1"></i>{{ doctor.experience_years|default:0 }} yrs exp &nbsp;·&nbsp;
+            <i class="fa fa-star text-warning me-1"></i>4.8
+          </div>
+          <a href="{% url 'doctors:doctor_detail' doctor.pk %}" class="btn btn-outline-primary btn-sm w-100">View Profile</a>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <div class="empty-state">
+          <i class="fa fa-user-doctor"></i>
+          <p>No doctors listed yet. <a href="{% url 'accounts:register' %}">Register as a doctor</a> to appear here.</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── Why Choose Us ── -->
+<section class="py-5" style="background:linear-gradient(135deg,#f0f7ff,#ecfdf5);" id="about">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-12 col-lg-6">
+        <span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--primary);">Why MediCare</span>
+        <h2 style="font-family:'Merriweather',serif;font-size:1.9rem;margin-top:.5rem;margin-bottom:1.5rem;color:var(--text);">A Hospital That Puts You First</h2>
+        <div class="d-flex flex-column gap-4">
+          {% for reason in "" %}{% empty %}
+          <div class="d-flex gap-3">
+            <div style="width:44px;height:44px;min-width:44px;border-radius:10px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;">
+              <i class="fa fa-user-doctor" style="color:var(--primary);"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1">Board-Certified Specialists</h6>
+              <p style="color:var(--muted);font-size:13.5px;margin:0;line-height:1.65;">Every doctor on our platform is verified, credentialed, and background-checked for your safety.</p>
+            </div>
+          </div>
+          <div class="d-flex gap-3">
+            <div style="width:44px;height:44px;min-width:44px;border-radius:10px;background:#ecfdf5;display:flex;align-items:center;justify-content:center;">
+              <i class="fa fa-calendar-check" style="color:var(--secondary);"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1">Same-Day Appointments</h6>
+              <p style="color:var(--muted);font-size:13.5px;margin:0;line-height:1.65;">Book, reschedule, or cancel appointments anytime. Instant confirmation, zero waiting on hold.</p>
+            </div>
+          </div>
+          <div class="d-flex gap-3">
+            <div style="width:44px;height:44px;min-width:44px;border-radius:10px;background:#fffbeb;display:flex;align-items:center;justify-content:center;">
+              <i class="fa fa-file-prescription" style="color:#f59e0b;"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1">Digital Prescriptions</h6>
+              <p style="color:var(--muted);font-size:13.5px;margin:0;line-height:1.65;">Receive and download prescriptions instantly. All your medical records in one secure place.</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div style="background:#fff;border-radius:20px;padding:2.5rem;box-shadow:var(--shadow-md);">
+          <h5 class="fw-bold mb-4" style="color:var(--text);">Book Your Appointment</h5>
+          <form action="{% url 'doctors:doctor_list' %}" method="get">
+            <div class="mb-3">
+              <label class="form-label fw-semibold" style="font-size:13px;">Search Doctor or Specialization</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-end-0"><i class="fa fa-search text-muted"></i></span>
+                <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="e.g. Cardiologist, Dr. Sharma…" />
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold" style="font-size:13px;">Specialization</label>
+              <select name="specialization" class="form-select">
+                <option value="">All Specializations</option>
+                {% for spec in specializations %}
+                <option value="{{ spec }}">{{ spec }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-100" style="padding:.75rem;">
+              <i class="fa fa-search me-2"></i>Find a Doctor
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA Banner ── -->
+<section style="background:var(--primary);padding:4rem 0;">
+  <div class="container text-center">
+    <h2 style="font-family:'Merriweather',serif;color:#fff;font-size:1.9rem;margin-bottom:1rem;">Ready to Take Control of Your Health?</h2>
+    <p style="color:#bfdbfe;max-width:500px;margin:auto auto 2rem;">Join thousands of patients who manage their healthcare effortlessly with MediCare.</p>
+    {% if not user.is_authenticated %}
+    <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg px-5" style="border-radius:10px;color:var(--primary);font-weight:600;">
+      Create Free Account <i class="fa fa-arrow-right ms-2"></i>
+    </a>
+    {% else %}
+    <a href="{% url 'doctors:doctor_list' %}" class="btn btn-light btn-lg px-5" style="border-radius:10px;color:var(--primary);font-weight:600;">
+      Book an Appointment <i class="fa fa-arrow-right ms-2"></i>
+    </a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

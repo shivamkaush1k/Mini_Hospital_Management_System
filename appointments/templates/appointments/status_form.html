@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Update Appointment Status{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'home' %}" class="text-decoration-none">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'appointments:appointment_list' %}" class="text-decoration-none">
+                Appointments
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            Update Status
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-lg-7">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0">
+                    <i class="fa-solid fa-clipboard-check me-2"></i>
+                    Update Appointment Status
+                </h4>
+            </div>
+
+            <div class="card-body">
+
+                {% if appointment %}
+
+                <div class="alert alert-light border mb-4">
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Patient</strong><br>
+                            {{ appointment.patient.user.get_full_name }}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Doctor</strong><br>
+                            {% if appointment.slot %}
+                                Dr. {{ appointment.slot.doctor.user.get_full_name }}
+                            {% elif appointment.doctor %}
+                                Dr. {{ appointment.doctor.user.get_full_name }}
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Date</strong><br>
+
+                            {% if appointment.appointment_date %}
+                                {{ appointment.appointment_date|date:"d M Y" }}
+                            {% elif appointment.date %}
+                                {{ appointment.date|date:"d M Y" }}
+                            {% endif %}
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Current Status</strong><br>
+
+                            {% if appointment.status == "Completed" %}
+                                <span class="badge bg-success">
+                                    {{ appointment.status }}
+                                </span>
+
+                            {% elif appointment.status == "Pending" %}
+                                <span class="badge bg-warning text-dark">
+                                    {{ appointment.status }}
+                                </span>
+
+                            {% elif appointment.status == "Cancelled" %}
+                                <span class="badge bg-danger">
+                                    {{ appointment.status }}
+                                </span>
+
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    {{ appointment.status }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endif %}
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+                    {{ form|crispy }}
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-between">
+
+                        <a href="{% url 'appointments:appointment_detail' appointment.pk %}"
+                           class="btn btn-outline-secondary">
+
+                            <i class="fa-solid fa-arrow-left me-2"></i>
+
+                            Back
+
+                        </a>
+
+                        <button type="submit"
+                                class="btn btn-primary">
+
+                            <i class="fa-solid fa-floppy-disk me-2"></i>
+
+                            Update Status
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

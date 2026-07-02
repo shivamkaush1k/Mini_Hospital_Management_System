@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block full_page %}
+<div class="full-page" style="background:linear-gradient(135deg,#f0f7ff 0%,#ecfdf5 100%);padding:2.5rem 1rem;">
+  <div class="container" style="max-width:860px;">
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <a href="{% url 'accounts:home' %}" class="d-inline-flex align-items-center gap-2 text-decoration-none mb-3">
+        <div style="width:40px;height:40px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+          <i class="fa-solid fa-heart-pulse text-white"></i>
+        </div>
+        <span style="font-family:'Merriweather',serif;font-size:1.3rem;color:var(--primary);font-weight:700;">MediCare</span>
+      </a>
+      <h3 class="fw-bold">Create your account</h3>
+      <p style="color:var(--muted);">Already registered? <a href="{% url 'accounts:login' %}" class="text-primary fw-semibold text-decoration-none">Sign in</a></p>
+    </div>
+
+    <div class="card p-4 p-sm-5" style="border:none;box-shadow:0 8px 40px rgba(0,0,0,.1);">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger" style="border-radius:8px;font-size:13.5px;">
+          <i class="fa fa-circle-exclamation me-2"></i>
+          {% for e in form.non_field_errors %}{{ e }}{% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Role selector -->
+        <div class="mb-4">
+          <label class="form-label fw-bold" style="font-size:13px;">I am registering as</label>
+          <div class="d-flex gap-3">
+            <div class="role-card flex-fill" data-role="patient" onclick="selectRole(this, 'patient')"
+                 style="border:2px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center;cursor:pointer;transition:.2s;">
+              <i class="fa fa-user mb-2" style="font-size:1.5rem;color:var(--primary);"></i>
+              <div class="fw-semibold">Patient</div>
+              <div style="font-size:12px;color:var(--muted);">Book appointments, manage health</div>
+            </div>
+            <div class="role-card flex-fill" data-role="doctor" onclick="selectRole(this, 'doctor')"
+                 style="border:2px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center;cursor:pointer;transition:.2s;">
+              <i class="fa fa-user-doctor mb-2" style="font-size:1.5rem;color:var(--secondary);"></i>
+              <div class="fw-semibold">Doctor</div>
+              <div style="font-size:12px;color:var(--muted);">Manage patients, slots, prescriptions</div>
+            </div>
+          </div>
+          <input type="hidden" name="role" id="roleInput" value="patient" />
+        </div>
+
+        <!-- Personal details -->
+        <h6 class="fw-bold mb-3" style="color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase;">Personal Details</h6>
+        <div class="row g-3 mb-3">
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">First Name *</label>
+            <input type="text" name="first_name" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
+                   placeholder="John" value="{{ form.first_name.value|default:'' }}" required />
+            {% if form.first_name.errors %}<div class="invalid-feedback">{{ form.first_name.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">Last Name *</label>
+            <input type="text" name="last_name" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
+                   placeholder="Doe" value="{{ form.last_name.value|default:'' }}" required />
+            {% if form.last_name.errors %}<div class="invalid-feedback">{{ form.last_name.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">Username *</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0">@</span>
+              <input type="text" name="username" class="form-control border-start-0 {% if form.username.errors %}is-invalid{% endif %}"
+                     placeholder="johndoe" value="{{ form.username.value|default:'' }}" required />
+              {% if form.username.errors %}<div class="invalid-feedback">{{ form.username.errors|join:", " }}</div>{% endif %}
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">Email Address *</label>
+            <input type="email" name="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                   placeholder="john@example.com" value="{{ form.email.value|default:'' }}" required />
+            {% if form.email.errors %}<div class="invalid-feedback">{{ form.email.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">Phone Number</label>
+            <input type="tel" name="phone" class="form-control" placeholder="+91 98765 43210"
+                   value="{{ form.phone.value|default:'' }}" />
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">Date of Birth</label>
+            <input type="date" name="date_of_birth" class="form-control" value="{{ form.date_of_birth.value|default:'' }}" />
+          </div>
+        </div>
+
+        <!-- Password -->
+        <h6 class="fw-bold mb-3 mt-2" style="color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase;">Set Password</h6>
+        <div class="row g-3 mb-3">
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">Password *</label>
+            <div class="input-group">
+              <input type="password" name="password1" id="pw1"
+                     class="form-control border-end-0 {% if form.password1.errors %}is-invalid{% endif %}"
+                     placeholder="Min. 8 characters" required />
+              <button type="button" class="btn btn-light border" onclick="togglePw('pw1','eye1')"><i class="fa fa-eye text-muted" id="eye1"></i></button>
+              {% if form.password1.errors %}<div class="invalid-feedback d-block">{{ form.password1.errors|join:", " }}</div>{% endif %}
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">Confirm Password *</label>
+            <div class="input-group">
+              <input type="password" name="password2" id="pw2"
+                     class="form-control border-end-0 {% if form.password2.errors %}is-invalid{% endif %}"
+                     placeholder="Repeat password" required />
+              <button type="button" class="btn btn-light border" onclick="togglePw('pw2','eye2')"><i class="fa fa-eye text-muted" id="eye2"></i></button>
+              {% if form.password2.errors %}<div class="invalid-feedback d-block">{{ form.password2.errors|join:", " }}</div>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Patient extra fields -->
+        <div id="patientFields">
+          <h6 class="fw-bold mb-3 mt-2" style="color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase;">Medical Details (Optional)</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" style="font-size:13px;">Blood Group</label>
+              <select name="blood_group" class="form-select">
+                <option value="">Select blood group</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+            </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" style="font-size:13px;">Gender</label>
+              <select name="gender" class="form-select">
+                <option value="">Select gender</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                <option value="O">Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Doctor extra fields -->
+        <div id="doctorFields" style="display:none;">
+          <h6 class="fw-bold mb-3 mt-2" style="color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase;">Professional Details</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" style="font-size:13px;">Specialization</label>
+              <input type="text" name="specialization" class="form-control" placeholder="e.g. Cardiologist" />
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" style="font-size:13px;">Experience (years)</label>
+              <input type="number" name="experience_years" class="form-control" placeholder="5" min="0" max="60" />
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" style="font-size:13px;">Consultation Fee (₹)</label>
+              <input type="number" name="consultation_fee" class="form-control" placeholder="500" min="0" />
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" style="font-size:13px;">License Number</label>
+              <input type="text" name="license_number" class="form-control" placeholder="MCI-XXXXX" />
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold" style="font-size:13px;">Qualifications</label>
+              <input type="text" name="qualifications" class="form-control" placeholder="e.g. MBBS, MD, DM Cardiology" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-check mb-4">
+          <input class="form-check-input" type="checkbox" id="termsCheck" required />
+          <label class="form-check-label" for="termsCheck" style="font-size:13px;color:var(--muted);">
+            I agree to the <a href="#" class="text-primary text-decoration-none">Terms of Service</a>
+            and <a href="#" class="text-primary text-decoration-none">Privacy Policy</a>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" style="font-size:15px;">
+          <i class="fa fa-user-plus me-2"></i>Create My Account
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function selectRole(el, role) {
+  document.querySelectorAll('.role-card').forEach(c => {
+    c.style.borderColor = 'var(--border)';
+    c.style.background = '#fff';
+  });
+  el.style.borderColor = role === 'patient' ? 'var(--primary)' : 'var(--secondary)';
+  el.style.background = role === 'patient' ? 'var(--primary-light)' : '#ecfdf5';
+  document.getElementById('roleInput').value = role;
+  document.getElementById('patientFields').style.display = role === 'patient' ? '' : 'none';
+  document.getElementById('doctorFields').style.display = role === 'doctor' ? '' : 'none';
+}
+// Default select patient
+selectRole(document.querySelector('[data-role="patient"]'), 'patient');
+
+function togglePw(id, eyeId) {
+  const f = document.getElementById(id);
+  const i = document.getElementById(eyeId);
+  if (f.type === 'password') { f.type = 'text'; i.classList.replace('fa-eye', 'fa-eye-slash'); }
+  else { f.type = 'password'; i.classList.replace('fa-eye-slash', 'fa-eye'); }
+}
+</script>
+{% endblock %}

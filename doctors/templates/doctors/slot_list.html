@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Available Slots{% endblock %}
+
+{% block content %}
+
+<h2>Available Slots</h2>
+
+<div class="row">
+
+{% for slot in slots %}
+
+<div class="col-md-3 mb-3">
+
+<div class="card shadow">
+
+<div class="card-body text-center">
+
+<h5>{{ slot.date }}</h5>
+
+<p>{{ slot.start_time }} - {{ slot.end_time }}</p>
+
+{% if slot.is_booked %}
+
+<span class="badge bg-danger">
+
+Booked
+
+</span>
+
+{% else %}
+
+<span class="badge bg-success">
+
+Available
+
+</span>
+
+{% endif %}
+
+</div>
+
+</div>
+
+</div>
+
+{% empty %}
+
+<div class="alert alert-warning">
+
+No slots available.
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}

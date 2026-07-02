@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Patient Dashboard{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar">
+  <div class="px-3 mb-3">
+    <div style="background:var(--primary-light);border-radius:12px;padding:1rem;text-align:center;">
+      {% if request.user.profile.photo %}
+      <img src="{{ request.user.profile.photo.url }}" class="avatar-lg mb-2" alt="Avatar" />
+      {% else %}
+      <div class="avatar-placeholder mx-auto mb-2" style="width:64px;height:64px;font-size:1.3rem;">
+        {{ request.user.first_name|first }}{{ request.user.last_name|first }}
+      </div>
+      {% endif %}
+      <div class="fw-bold" style="font-size:14px;">{{ request.user.get_full_name }}</div>
+      <div style="font-size:12px;color:var(--muted);">Patient</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section-label">Main Menu</div>
+  <a class="sidebar-link active" href="{% url 'patients:dashboard' %}"><i class="fa fa-gauge"></i> Dashboard</a>
+  <a class="sidebar-link" href="{% url 'doctors:doctor_list' %}"><i class="fa fa-user-doctor"></i> Find Doctors</a>
+  <a class="sidebar-link" href="{% url 'patients:appointment_history' %}"><i class="fa fa-calendar"></i> Appointments</a>
+  <a class="sidebar-link" href="{% url 'prescriptions:my_prescriptions' %}"><i class="fa fa-file-prescription"></i> Prescriptions</a>
+  <a class="sidebar-link" href="{% url 'patients:medical_history' %}"><i class="fa fa-clock-rotate-left"></i> Medical History</a>
+
+  <div class="sidebar-section-label mt-2">Account</div>
+  <a class="sidebar-link" href="{% url 'accounts:profile' %}"><i class="fa fa-circle-user"></i> My Profile</a>
+  <a class="sidebar-link text-danger" href="{% url 'accounts:logout' %}"><i class="fa fa-right-from-bracket"></i> Sign Out</a>
+</aside>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'accounts:home' %}" class="text-decoration-none text-muted">Home</a></li>
+    <li class="breadcrumb-item active">Dashboard</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div>
+    <h1>Good {% now "G" as hour %}{% if hour|add:"0" < 12 %}Morning{% elif hour|add:"0" < 17 %}Afternoon{% else %}Evening{% endif %}, {{ request.user.first_name }}! 👋</h1>
+    <p style="color:var(--muted);margin:0;font-size:13.5px;">Here's your health summary for today.</p>
+  </div>
+  <a href="{% url 'doctors:doctor_list' %}" class="btn btn-primary">
+    <i class="fa fa-calendar-plus me-2"></i>Book Appointment
+  </a>
+</div>
+
+<!-- Stat cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#eff6ff;"><i class="fa fa-calendar-check" style="color:var(--primary);"></i></div>
+      <div>
+        <div class="stat-value">{{ appointment_count|default:0 }}</div>
+        <div class="stat-label">Total Appointments</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#ecfdf5;"><i class="fa fa-file-prescription" style="color:var(--secondary);"></i></div>
+      <div>
+        <div class="stat-value">{{ prescription_count|default:0 }}</div>
+        <div class="stat-label">Prescriptions</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#fffbeb;"><i class="fa fa-clock" style="color:#f59e0b;"></i></div>
+      <div>
+        <div class="stat-value">{{ upcoming_count|default:0 }}</div>
+        <div class="stat-label">Upcoming</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#fef2f2;"><i class="fa fa-heart-pulse" style="color:var(--danger);"></i></div>
+      <div>
+        <div class="stat-value">{{ request.user.profile.blood_group|default:"—" }}</div>
+        <div class="stat-label">Blood Group</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Next appointment banner -->
+{% if next_appointment %}
+<div class="card mb-4 p-0 overflow-hidden border-0" style="background:linear-gradient(135deg,var(--primary),#0d9488);box-shadow:0 4px 20px rgba(26,111,196,.25);">
+  <div class="p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div class="d-flex align-items-center gap-3">
+      <div style="width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;">
+        <i class="fa fa-calendar-star" style="font-size:1.4rem;color:#fff;"></i>
+      </div>
+      <div>
+        <div style="font-size:12px;color:rgba(255,255,255,.75);font-weight:500;">Next Appointment</div>
+        <div style="font-size:1.1rem;font-weight:700;color:#fff;">Dr. {{ next_appointment.doctor.user.get_full_name }}</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.85);">
+          <i class="fa fa-calendar me-1"></i>{{ next_appointment.date|date:"D, d M Y" }}
+          &nbsp;·&nbsp;
+          <i class="fa fa-clock me-1"></i>{{ next_appointment.slot.start_time|time:"g:i A" }}
+        </div>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'appointment_detail' next_appointment.pk %}" class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);">View Details</a>
+      <a href="{% url 'cancel_appointment' next_appointment.pk %}" class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);">Cancel</a>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <!-- Recent Prescriptions -->
+  <div class="col-12 col-xl-6">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center py-3 px-4">
+        <span><i class="fa fa-file-prescription me-2 text-primary"></i>Recent Prescriptions</span>
+        <a href="{% url 'prescriptions:my_prescriptions' %}" class="btn btn-sm btn-outline-primary">View All</a>
+      </div>
+      <div class="card-body p-0">
+        {% if recent_prescriptions %}
+        <div class="list-group list-group-flush">
+          {% for rx in recent_prescriptions %}
+          <a href="{% url 'prescriptions:prescription_detail' rx.pk %}" class="list-group-item list-group-item-action px-4 py-3 border-0 border-bottom">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="fw-semibold" style="font-size:13.5px;">Dr. {{ rx.doctor.user.get_full_name }}</div>
+                <div style="font-size:12.5px;color:var(--muted);" class="mt-1">
+                  <i class="fa fa-stethoscope me-1"></i>{{ rx.diagnosis|truncatechars:40 }}
+                </div>
+              </div>
+              <span style="font-size:11.5px;color:var(--muted);white-space:nowrap;">{{ rx.created_at|date:"d M" }}</span>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="fa fa-file-prescription"></i>
+          <p>No prescriptions yet.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming Appointments -->
+  <div class="col-12 col-xl-6">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center py-3 px-4">
+        <span><i class="fa fa-calendar me-2 text-primary"></i>Upcoming Appointments</span>
+        <a href="{% url 'appointments:my_appointments' %}" class="btn btn-sm btn-outline-primary">View All</a>
+      </div>
+      <div class="card-body p-0">
+        {% if upcoming_appointments %}
+        <div class="list-group list-group-flush">
+          {% for appt in upcoming_appointments %}
+          <div class="list-group-item px-4 py-3 border-0 border-bottom">
+            <div class="d-flex justify-content-between align-items-start">
+              <div class="d-flex gap-3">
+                <div class="avatar-placeholder" style="width:40px;height:40px;border-radius:10px;">
+                  {{ appt.doctor.user.first_name|first }}
+                </div>
+                <div>
+                  <div class="fw-semibold" style="font-size:13.5px;">Dr. {{ appt.doctor.user.get_full_name }}</div>
+                  <div style="font-size:12px;color:var(--muted);">{{ appt.doctor.specialization }}</div>
+                  <div style="font-size:12px;color:var(--muted);" class="mt-1">
+                    <i class="fa fa-calendar me-1"></i>{{ appt.date|date:"d M Y" }}
+                    &nbsp;·&nbsp;
+                    <i class="fa fa-clock me-1"></i>{{ appt.slot.start_time|time:"g:i A" }}
+                  </div>
+                </div>
+              </div>
+              <span class="badge badge-status bg-warning-subtle text-warning">Upcoming</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="fa fa-calendar-xmark"></i>
+          <p>No upcoming appointments.</p>
+          <a href="{% url 'doctors:doctor_list' %}" class="btn btn-sm btn-primary mt-2">Book Now</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Available Doctors -->
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center py-3 px-4">
+        <span><i class="fa fa-user-doctor me-2 text-primary"></i>Available Doctors</span>
+        <a href="{% url 'doctors:doctor_list' %}" class="btn btn-sm btn-outline-primary">Browse All</a>
+      </div>
+      <div class="card-body">
+        {% if available_doctors %}
+        <div class="row g-3">
+          {% for doctor in available_doctors|slice:":4" %}
+          <div class="col-12 col-sm-6 col-lg-3">
+            <div class="d-flex align-items-center gap-3 p-3" style="border:1px solid var(--border);border-radius:12px;">
+              {% if doctor.profile_picture %}
+              <img src="{{ doctor.profile_picture.url }}" class="avatar" alt="Dr." />
+              {% else %}
+              <div class="avatar-placeholder">{{ doctor.user.first_name|first }}</div>
+              {% endif %}
+              <div style="min-width:0;">
+                <div class="fw-semibold" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Dr. {{ doctor.user.get_full_name }}</div>
+                <div style="font-size:12px;color:var(--muted);">{{ doctor.specialization }}</div>
+                <a href="{% url 'book_appointment' doctor.pk %}" class="btn btn-sm btn-primary mt-1" style="font-size:11px;padding:.2rem .6rem;">Book</a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="fa fa-user-doctor"></i>
+          <p>No doctors available at the moment.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

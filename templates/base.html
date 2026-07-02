@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}MediCare Hospital{% endblock %} | MediCare</title>
+
+  <!-- Bootstrap 5.3 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Font Awesome 6 -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet" />
+
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+
+  <style>
+    :root {
+      --primary:   #1a6fc4;
+      --primary-light: #e8f1fb;
+      --secondary: #0d9488;
+      --accent:    #f59e0b;
+      --danger:    #ef4444;
+      --success:   #22c55e;
+      --text:      #1e293b;
+      --muted:     #64748b;
+      --border:    #e2e8f0;
+      --bg:        #f8fafc;
+      --card-bg:   #ffffff;
+      --sidebar-w: 260px;
+      --navbar-h:  64px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.10);
+      --radius:    12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+    }
+
+    /* ── Navbar ── */
+    .main-navbar {
+      height: var(--navbar-h);
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 1040;
+      box-shadow: var(--shadow-sm);
+    }
+    .navbar-brand-text { font-family: 'Merriweather', serif; font-size: 1.25rem; color: var(--primary); font-weight: 700; }
+    .navbar-brand-text span { color: var(--secondary); }
+
+    /* ── Layout wrapper ── */
+    .page-wrapper { display: flex; min-height: calc(100vh - var(--navbar-h)); }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: #fff;
+      border-right: 1px solid var(--border);
+      padding: 1.25rem 0;
+      position: sticky;
+      top: var(--navbar-h);
+      height: calc(100vh - var(--navbar-h));
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .sidebar-section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: .5rem 1.25rem .25rem;
+    }
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .6rem 1.25rem;
+      color: var(--text);
+      text-decoration: none;
+      border-radius: 0 8px 8px 0;
+      margin-right: .75rem;
+      font-weight: 500;
+      transition: background .15s, color .15s;
+    }
+    .sidebar-link i { width: 18px; text-align: center; color: var(--muted); transition: color .15s; }
+    .sidebar-link:hover, .sidebar-link.active {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    .sidebar-link:hover i, .sidebar-link.active i { color: var(--primary); }
+
+    /* ── Main content ── */
+    .main-content {
+      flex: 1;
+      min-width: 0;
+      padding: 1.75rem 2rem;
+    }
+
+    /* ── Cards ── */
+    .card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      background: var(--card-bg);
+    }
+    .card-header { background: transparent; border-bottom: 1px solid var(--border); font-weight: 600; }
+
+    /* ── Stat cards ── */
+    .stat-card {
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: #fff;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-icon {
+      width: 52px; height: 52px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.35rem;
+      flex-shrink: 0;
+    }
+    .stat-value { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+    .stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* ── Badges ── */
+    .badge-status { font-size: 11px; padding: .3em .65em; border-radius: 6px; font-weight: 600; }
+
+    /* ── Buttons ── */
+    .btn { border-radius: 8px; font-weight: 500; font-size: 13.5px; }
+    .btn-primary { background: var(--primary); border-color: var(--primary); }
+    .btn-primary:hover { background: #155fa8; border-color: #155fa8; }
+    .btn-outline-primary { color: var(--primary); border-color: var(--primary); }
+    .btn-outline-primary:hover { background: var(--primary); }
+
+    /* ── Tables ── */
+    .table { font-size: 13.5px; }
+    .table thead th { font-weight: 600; color: var(--muted); border-bottom-width: 1px; white-space: nowrap; }
+    .table tbody tr:hover { background: var(--primary-light); }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb { font-size: 12.5px; }
+    .breadcrumb-item + .breadcrumb-item::before { color: var(--muted); }
+
+    /* ── Avatar ── */
+    .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+    .avatar-lg { width: 80px; height: 80px; }
+    .avatar-placeholder {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--primary-light);
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--primary); font-weight: 600; font-size: 14px;
+    }
+
+    /* ── Alert toasts (Django messages) ── */
+    .toast-container { position: fixed; top: 76px; right: 1rem; z-index: 2000; min-width: 300px; }
+
+    /* ── Empty state ── */
+    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+    .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: .4; }
+
+    /* ── Page header ── */
+    .page-header { margin-bottom: 1.5rem; }
+    .page-header h1 { font-size: 1.4rem; font-weight: 700; margin: 0; }
+
+    /* ── Doctor card ── */
+    .doctor-card { border-radius: var(--radius); overflow: hidden; transition: transform .2s, box-shadow .2s; }
+    .doctor-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+    /* ── Timeline ── */
+    .timeline { position: relative; padding-left: 2rem; }
+    .timeline::before { content: ''; position: absolute; left: .5rem; top: 0; bottom: 0; width: 2px; background: var(--border); }
+    .timeline-item { position: relative; margin-bottom: 1.5rem; }
+    .timeline-dot {
+      position: absolute; left: -1.65rem; top: .3rem;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--primary); border: 2px solid #fff;
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+
+    /* ── Slot button ── */
+    .slot-btn { font-size: 12px; padding: .35rem .75rem; border-radius: 8px; }
+
+    /* ── No sidebar pages ── */
+    .full-page { min-height: calc(100vh - var(--navbar-h)); }
+
+    /* ── Responsive ── */
+    @media (max-width: 991px) {
+      .sidebar { display: none; }
+      .main-content { padding: 1rem; }
+    }
+
+    @media (max-width: 576px) {
+      .main-content { padding: .75rem; }
+      .stat-value { font-size: 1.3rem; }
+    }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+  {% include "navbar.html" %}
+
+  {% if messages %}
+  <div class="toast-container">
+    {% for message in messages %}
+    <div class="toast align-items-center text-white border-0 show mb-2
+      {% if message.tags == 'error' %}bg-danger
+      {% elif message.tags == 'success' %}bg-success
+      {% elif message.tags == 'warning' %}bg-warning text-dark
+      {% else %}bg-primary{% endif %}"
+      role="alert" data-bs-autohide="true" data-bs-delay="4000">
+      <div class="d-flex">
+        <div class="toast-body fw-semibold">
+          {% if message.tags == 'error' %}<i class="fa fa-circle-exclamation me-2"></i>
+          {% elif message.tags == 'success' %}<i class="fa fa-circle-check me-2"></i>
+          {% elif message.tags == 'warning' %}<i class="fa fa-triangle-exclamation me-2"></i>
+          {% else %}<i class="fa fa-info-circle me-2"></i>{% endif %}
+          {{ message }}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% block full_page %}
+  <div class="page-wrapper">
+    {% block sidebar %}{% endblock %}
+    <main class="main-content">
+      {% block breadcrumb %}{% endblock %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% endblock %}
+
+  {% include "footer.html" %}
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Auto-dismiss toasts
+    document.querySelectorAll('.toast').forEach(el => {
+      const t = new bootstrap.Toast(el, { delay: 4500 });
+      t.show();
+    });
+    // Active sidebar link
+    const path = window.location.pathname;
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+      if (link.getAttribute('href') === path) link.classList.add('active');
+    });
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block full_page %}
+<div class="full-page d-flex" style="background:linear-gradient(135deg,#f0f7ff 0%,#ecfdf5 100%);">
+  <!-- Left illustration panel -->
+  <div class="d-none d-lg-flex col-lg-6 flex-column align-items-center justify-content-center p-5"
+       style="background:linear-gradient(160deg,#0f2c5e,#1a6fc4);">
+    <div class="text-center" style="max-width:380px;">
+      <div style="width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 2rem;">
+        <i class="fa-solid fa-heart-pulse" style="font-size:3rem;color:#7dd3fc;"></i>
+      </div>
+      <h2 style="font-family:'Merriweather',serif;color:#fff;margin-bottom:1rem;">Welcome Back</h2>
+      <p style="color:#bfdbfe;line-height:1.75;">Access your appointments, prescriptions, and medical records — all in your secure patient portal.</p>
+      <div class="d-flex flex-column gap-3 mt-4 text-start">
+        <div class="d-flex align-items-center gap-3" style="color:#bfdbfe;font-size:14px;">
+          <i class="fa fa-circle-check" style="color:#22c55e;"></i> View upcoming appointments
+        </div>
+        <div class="d-flex align-items-center gap-3" style="color:#bfdbfe;font-size:14px;">
+          <i class="fa fa-circle-check" style="color:#22c55e;"></i> Download prescriptions instantly
+        </div>
+        <div class="d-flex align-items-center gap-3" style="color:#bfdbfe;font-size:14px;">
+          <i class="fa fa-circle-check" style="color:#22c55e;"></i> Manage your health records
+        </div>
+        <div class="d-flex align-items-center gap-3" style="color:#bfdbfe;font-size:14px;">
+          <i class="fa fa-circle-check" style="color:#22c55e;"></i> Book with top specialists
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right login form -->
+  <div class="col-12 col-lg-6 d-flex align-items-center justify-content-center p-4">
+    <div style="width:100%;max-width:420px;">
+      <!-- Mobile brand -->
+      <div class="d-lg-none text-center mb-4">
+        <div class="d-inline-flex align-items-center gap-2">
+          <div style="width:36px;height:36px;background:var(--primary);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+            <i class="fa-solid fa-heart-pulse text-white"></i>
+          </div>
+          <span style="font-family:'Merriweather',serif;font-size:1.25rem;color:var(--primary);font-weight:700;">MediCare</span>
+        </div>
+      </div>
+
+      <div class="card p-4 p-sm-5" style="border:none;box-shadow:0 8px 40px rgba(0,0,0,.1);">
+        <h4 class="fw-bold mb-1">Sign in to your account</h4>
+        <p style="color:var(--muted);font-size:13.5px;margin-bottom:1.75rem;">Don't have an account? <a href="{% url 'accounts:register' %}" class="text-primary fw-semibold text-decoration-none">Register here</a></p>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2" style="font-size:13.5px;border-radius:8px;">
+            <i class="fa fa-circle-exclamation me-2"></i>
+            {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+          </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:13px;">Username or Email</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="fa fa-user text-muted"></i></span>
+              <input type="text" name="username" class="form-control border-start-0 ps-1 {% if form.username.errors %}is-invalid{% endif %}"
+                     placeholder="Enter your username" value="{{ form.username.value|default:'' }}" autocomplete="username" />
+              {% if form.username.errors %}
+              <div class="invalid-feedback">{{ form.username.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="form-label fw-semibold mb-0" style="font-size:13px;">Password</label>
+            </div>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="fa fa-lock text-muted"></i></span>
+              <input type="password" name="password" id="passwordField"
+                     class="form-control border-start-0 ps-1 border-end-0 {% if form.password.errors %}is-invalid{% endif %}"
+                     placeholder="Enter your password" autocomplete="current-password" />
+              <button type="button" class="btn btn-light border" onclick="togglePassword()" style="border-radius:0 8px 8px 0;">
+                <i class="fa fa-eye text-muted" id="eyeIcon"></i>
+              </button>
+              {% if form.password.errors %}
+              <div class="invalid-feedback">{{ form.password.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" name="remember_me" id="rememberMe" />
+            <label class="form-check-label" for="rememberMe" style="font-size:13px;color:var(--muted);">Keep me signed in for 30 days</label>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" style="font-size:15px;">
+            <i class="fa fa-right-to-bracket me-2"></i>Sign In
+          </button>
+        </form>
+
+        <div class="text-center mt-4" style="font-size:12px;color:var(--muted);">
+          <i class="fa fa-shield-halved me-1 text-success"></i>
+          Your connection is secure and encrypted
+        </div>
+      </div>
+
+      <p class="text-center mt-3" style="font-size:12.5px;color:var(--muted);">
+        By signing in, you agree to our <a href="#" class="text-primary text-decoration-none">Terms of Service</a>
+        and <a href="#" class="text-primary text-decoration-none">Privacy Policy</a>.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePassword() {
+  const f = document.getElementById('passwordField');
+  const i = document.getElementById('eyeIcon');
+  if (f.type === 'password') { f.type = 'text'; i.classList.replace('fa-eye', 'fa-eye-slash'); }
+  else { f.type = 'password'; i.classList.replace('fa-eye-slash', 'fa-eye'); }
+}
+</script>
+{% endblock %}

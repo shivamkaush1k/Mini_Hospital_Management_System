@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Appointments{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'home' %}" class="text-decoration-none">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'patients:patient_dashboard' %}" class="text-decoration-none">
+                Dashboard
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            My Appointments
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+
+    <div>
+        <h2 class="fw-bold mb-1">
+            <i class="fa-solid fa-calendar-check text-primary me-2"></i>
+            My Appointments
+        </h2>
+
+        <p class="text-muted mb-0">
+            View and manage your appointments.
+        </p>
+    </div>
+
+    <a href="{% url 'doctors:doctor_list' %}" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-2"></i>
+        Book Appointment
+    </a>
+
+</div>
+
+<div class="card shadow-sm border-0">
+
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fa-solid fa-calendar-days text-primary me-2"></i>
+            Appointment History
+        </h5>
+    </div>
+
+    <div class="card-body p-0">
+
+        {% if appointments %}
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Doctor</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for appointment in appointments %}
+
+                <tr>
+
+                    <td>
+                        {% if appointment.appointment_date %}
+                            {{ appointment.appointment_date|date:"d M Y" }}
+                        {% elif appointment.date %}
+                            {{ appointment.date|date:"d M Y" }}
+                        {% elif appointment.start_time %}
+                            {{ appointment.start_time|date:"d M Y" }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if appointment.slot %}
+                            {{ appointment.slot.start_time|time:"h:i A" }}
+                        {% elif appointment.start_time %}
+                            {{ appointment.start_time|time:"h:i A" }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if appointment.slot %}
+                            Dr. {{ appointment.slot.doctor.user.get_full_name }}
+                        {% elif appointment.doctor %}
+                            Dr. {{ appointment.doctor.user.get_full_name }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if appointment.slot %}
+                            {{ appointment.slot.doctor.specialization }}
+                        {% elif appointment.doctor %}
+                            {{ appointment.doctor.specialization }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <td>
+
+                        {% if appointment.status == "Pending" %}
+                            <span class="badge bg-warning text-dark">
+                                Pending
+                            </span>
+
+                        {% elif appointment.status == "Confirmed" %}
+                            <span class="badge bg-info">
+                                Confirmed
+                            </span>
+
+                        {% elif appointment.status == "Completed" %}
+                            <span class="badge bg-success">
+                                Completed
+                            </span>
+
+                        {% elif appointment.status == "Cancelled" %}
+                            <span class="badge bg-danger">
+                                Cancelled
+                            </span>
+
+                        {% else %}
+                            <span class="badge bg-secondary">
+                                {{ appointment.status }}
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td class="text-center">
+
+                        <a href="{% url 'appointments:appointment_detail' appointment.pk %}"
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fa-solid fa-eye"></i>
+                        </a>
+
+                        {% if appointment.status != "Cancelled" and appointment.status != "Completed" %}
+
+                        <a href="{% url 'appointments:cancel_appointment' appointment.pk %}"
+                           class="btn btn-sm btn-outline-danger">
+                            <i class="fa-solid fa-ban"></i>
+                        </a>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="text-center py-5">
+
+            <i class="fa-solid fa-calendar-xmark fa-4x text-muted mb-3"></i>
+
+            <h4>No Appointments Found</h4>
+
+            <p class="text-muted mb-4">
+                You haven't booked any appointments yet.
+            </p>
+
+            <a href="{% url 'doctors:doctor_list' %}" class="btn btn-primary">
+                <i class="fa-solid fa-user-doctor me-2"></i>
+                Find a Doctor
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

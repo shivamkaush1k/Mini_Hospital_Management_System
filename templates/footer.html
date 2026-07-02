@@ -1,0 +1,86 @@
+{% load static %}
+<footer style="background:#0f172a;color:#94a3b8;font-size:13px;" class="mt-auto">
+  <div class="container-fluid px-4 px-lg-5">
+    <div class="row py-5 g-4">
+      <!-- Brand -->
+      <div class="col-12 col-lg-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div style="width:36px;height:36px;background:var(--primary);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+            <i class="fa-solid fa-heart-pulse text-white"></i>
+          </div>
+          <span style="font-family:'Merriweather',serif;font-size:1.2rem;color:#fff;font-weight:700;">MediCare</span>
+        </div>
+        <p class="mb-3" style="line-height:1.7;">Providing compassionate, expert healthcare with a patient-first approach. Available 24/7 for your health and well-being.</p>
+        <div class="d-flex gap-2">
+          <a href="#" class="text-decoration-none" style="width:34px;height:34px;background:#1e3a5f;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#94a3b8;transition:.2s;" onmouseover="this.style.background='var(--primary)';this.style.color='#fff'" onmouseout="this.style.background='#1e3a5f';this.style.color='#94a3b8'">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="#" class="text-decoration-none" style="width:34px;height:34px;background:#1e3a5f;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#94a3b8;transition:.2s;" onmouseover="this.style.background='var(--primary)';this.style.color='#fff'" onmouseout="this.style.background='#1e3a5f';this.style.color='#94a3b8'">
+            <i class="fab fa-twitter"></i>
+          </a>
+          <a href="#" class="text-decoration-none" style="width:34px;height:34px;background:#1e3a5f;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#94a3b8;transition:.2s;" onmouseover="this.style.background='var(--primary)';this.style.color='#fff'" onmouseout="this.style.background='#1e3a5f';this.style.color='#94a3b8'">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="#" class="text-decoration-none" style="width:34px;height:34px;background:#1e3a5f;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#94a3b8;transition:.2s;" onmouseover="this.style.background='var(--primary)';this.style.color='#fff'" onmouseout="this.style.background='#1e3a5f';this.style.color='#94a3b8'">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="col-6 col-md-4 col-lg-2">
+        <h6 style="color:#fff;font-weight:600;margin-bottom:1rem;font-size:13px;">Quick Links</h6>
+        <ul class="list-unstyled d-flex flex-column gap-2">
+          <li><a href="{% url 'accounts:home' %}" class="text-decoration-none" style="color:#94a3b8;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Home</a></li>
+          <li><a href="{% url 'accounts:about' %}" class="text-decoration-none" style="color:#94a3b8;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">About Us</a></li>
+          <li><a href="{% url 'doctors:doctor_list' %}" class="text-decoration-none" style="color:#94a3b8;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Our Doctors</a></li>
+          <li><a href="{% url 'accounts:contacts' %}" class="text-decoration-none" style="color:#94a3b8;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Contact</a></li>
+        </ul>
+      </div>
+
+      <!-- Services -->
+      <div class="col-6 col-md-4 col-lg-2">
+        <h6 style="color:#fff;font-weight:600;margin-bottom:1rem;font-size:13px;">Services</h6>
+        <ul class="list-unstyled d-flex flex-column gap-2">
+          <li><a href="{% url 'accounts:home' %}" class="text-decoration-none" style="color:#94a3b8;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">General Medicine</a></li>
+          <li><a href="{% url 'accounts:home' %}" class="text-decoration-none" style="color:#94a3b8;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Cardiology</a></li>
+          <li><a href="{% url 'accounts:home' %}" class="text-decoration-none" style="color:#94a3b8;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Orthopedics</a></li>
+          <li><a href="{% url 'accounts:home' %}" class="text-decoration-none" style="color:#94a3b8;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Neurology</a></li>
+          <li><a href="{% url 'accounts:home' %}" class="text-decoration-none" style="color:#94a3b8;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Pediatrics</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div class="col-12 col-md-4 col-lg-4" id="contact">
+        <h6 style="color:#fff;font-weight:600;margin-bottom:1rem;font-size:13px;">Contact Us</h6>
+        <ul class="list-unstyled d-flex flex-column gap-3">
+          <li class="d-flex gap-3 align-items-start">
+            <i class="fa fa-location-dot mt-1" style="color:var(--primary);min-width:16px;"></i>
+            <span>123 Healthcare Avenue,<br>Medical District, MH 400001</span>
+          </li>
+          <li class="d-flex gap-3 align-items-center">
+            <i class="fa fa-phone" style="color:var(--primary);min-width:16px;"></i>
+            <a href="tel:+911800123456" class="text-decoration-none" style="color:#94a3b8;">+91 1800-123-456</a>
+          </li>
+          <li class="d-flex gap-3 align-items-center">
+            <i class="fa fa-envelope" style="color:var(--primary);min-width:16px;"></i>
+            <a href="mailto:info@medicare.com" class="text-decoration-none" style="color:#94a3b8;">info@medicare.com</a>
+          </li>
+          <li class="d-flex gap-3 align-items-center">
+            <i class="fa fa-clock" style="color:var(--primary);min-width:16px;"></i>
+            <span>Emergency: 24×7 Available</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-top d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 py-3" style="border-color:#1e3a5f !important;font-size:12px;">
+      <span>© {% now "Y" %} MediCare Hospital. All rights reserved.</span>
+      <div class="d-flex gap-3">
+        <a href="#" class="text-decoration-none" style="color:#94a3b8;">Privacy Policy</a>
+        <a href="#" class="text-decoration-none" style="color:#94a3b8;">Terms of Service</a>
+        <a href="#" class="text-decoration-none" style="color:#94a3b8;">HIPAA Compliance</a>
+      </div>
+    </div>
+  </div>
+</footer>

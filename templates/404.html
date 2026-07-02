@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}
+404 - Page Not Found
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-8">
+
+            <div class="card shadow border-0">
+
+                <div class="card-body text-center p-5">
+
+                    <div class="mb-4">
+                        <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 5rem;"></i>
+                    </div>
+
+                    <h1 class="display-1 fw-bold text-primary">
+                        404
+                    </h1>
+
+                    <h2 class="mb-3">
+                        Page Not Found
+                    </h2>
+
+                    <p class="text-muted fs-5 mb-4">
+                        Sorry, the page you are looking for does not exist or has been moved.
+                    </p>
+
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+
+                        <a href="{% url 'home' %}" class="btn btn-primary">
+                            <i class="bi bi-house-door-fill"></i>
+                            Home
+                        </a>
+
+                        {% if user.is_authenticated %}
+
+                        <a href="{% url 'accounts:dashboard' %}" class="btn btn-success">
+                            <i class="bi bi-speedometer2"></i>
+                            Dashboard
+                        </a>
+
+                        {% else %}
+
+                        <a href="{% url 'accounts:login' %}" class="btn btn-success">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            Login
+                        </a>
+
+                        {% endif %}
+
+                    </div>
+
+                    <hr class="my-5">
+
+                    <h5 class="mb-3">
+                        You may be looking for:
+                    </h5>
+
+                    <div class="row">
+
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'home' %}" class="text-decoration-none">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <i class="bi bi-house-fill fs-2 text-primary"></i>
+                                        <h6 class="mt-2">Home</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'about' %}" class="text-decoration-none">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <i class="bi bi-hospital fs-2 text-success"></i>
+                                        <h6 class="mt-2">About</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'contact' %}" class="text-decoration-none">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <i class="bi bi-envelope-fill fs-2 text-danger"></i>
+                                        <h6 class="mt-2">Contact</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

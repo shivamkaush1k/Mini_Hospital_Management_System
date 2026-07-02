@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}
+{% if form.instance.pk %}
+Update Patient Profile
+{% else %}
+Create Patient Profile
+{% endif %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'home' %}" class="text-decoration-none">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'patients:patient_dashboard' %}" class="text-decoration-none">Patient Dashboard</a>
+        </li>
+        <li class="breadcrumb-item active">
+            {% if form.instance.pk %}
+                Update Profile
+            {% else %}
+                Create Profile
+            {% endif %}
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0">
+                    {% if form.instance.pk %}
+                        <i class="fa-solid fa-user-pen me-2"></i>
+                        Update Patient Profile
+                    {% else %}
+                        <i class="fa-solid fa-user-plus me-2"></i>
+                        Create Patient Profile
+                    {% endif %}
+                </h4>
+            </div>
+
+            <div class="card-body p-4">
+
+                <form method="post" enctype="multipart/form-data">
+
+                    {% csrf_token %}
+
+                    {{ form|crispy }}
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-between">
+
+                        <a href="{% url 'patients:patient_dashboard' %}"
+                           class="btn btn-outline-secondary">
+                            <i class="fa-solid fa-arrow-left me-2"></i>
+                            Back
+                        </a>
+
+                        <button type="submit"
+                                class="btn btn-primary">
+
+                            {% if form.instance.pk %}
+                                <i class="fa-solid fa-floppy-disk me-2"></i>
+                                Save Changes
+                            {% else %}
+                                <i class="fa-solid fa-check me-2"></i>
+                                Create Profile
+                            {% endif %}
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        {% if form.instance.pk %}
+
+        <div class="card mt-4 border-0 shadow-sm">
+
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fa-solid fa-circle-info me-2 text-primary"></i>
+                    Profile Information
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+                        <strong>Full Name</strong><br>
+                        {{ request.user.get_full_name }}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <strong>Email</strong><br>
+                        {{ request.user.email }}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <strong>Username</strong><br>
+                        {{ request.user.username }}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <strong>Member Since</strong><br>
+                        {{ request.user.date_joined|date:"d M Y" }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

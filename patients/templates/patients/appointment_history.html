@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Appointments{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar">
+  <div class="sidebar-section-label">Patient Menu</div>
+  <a class="sidebar-link" href="{% url 'patients:dashboard' %}"><i class="fa fa-gauge"></i> Dashboard</a>
+  <a class="sidebar-link" href="{% url 'doctors:doctor_list' %}"><i class="fa fa-user-doctor"></i> Find Doctors</a>
+  <a class="sidebar-link active" href="{% url 'appointments:my_appointments' %}"><i class="fa fa-calendar"></i> Appointments</a>
+  <a class="sidebar-link" href="{% url 'prescriptions:my_prescriptions' %}"><i class="fa fa-file-prescription"></i> Prescriptions</a>
+  <a class="sidebar-link" href="{% url 'patients:medical_history' %}"><i class="fa fa-clock-rotate-left"></i> Medical History</a>
+  <div class="sidebar-section-label mt-2">Account</div>
+  <a class="sidebar-link" href="{% url 'accounts:profile' %}"><i class="fa fa-circle-user"></i> My Profile</a>
+  <a class="sidebar-link text-danger" href="{% url 'accounts:logout' %}"><i class="fa fa-right-from-bracket"></i> Sign Out</a>
+</aside>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'patients:dashboard' %}" class="text-decoration-none text-muted">Dashboard</a></li>
+    <li class="breadcrumb-item active">Appointments</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div>
+    <h1><i class="fa fa-calendar me-2 text-primary"></i>My Appointments</h1>
+    <p style="color:var(--muted);margin:0;">Track all your past and upcoming consultations.</p>
+  </div>
+  <a href="{% url 'doctors:doctor_list' %}" class="btn btn-primary">
+    <i class="fa fa-calendar-plus me-2"></i>Book New
+  </a>
+</div>
+
+<!-- Tab filter -->
+<ul class="nav nav-pills mb-4 gap-1" id="apptTabs">
+  <li class="nav-item">
+    <a class="nav-link {% if not request.GET.status or request.GET.status == 'all' %}active{% endif %}"
+       href="?status=all">All</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if request.GET.status == 'upcoming' %}active{% endif %}"
+       href="?status=upcoming">
+      <i class="fa fa-clock me-1"></i>Upcoming
+      {% if upcoming_count %}<span class="badge bg-primary ms-1">{{ upcoming_count }}</span>{% endif %}
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if request.GET.status == 'completed' %}active{% endif %}"
+       href="?status=completed">
+      <i class="fa fa-circle-check me-1"></i>Completed
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if request.GET.status == 'cancelled' %}active{% endif %}"
+       href="?status=cancelled">
+      <i class="fa fa-circle-xmark me-1"></i>Cancelled
+    </a>
+  </li>
+</ul>
+
+<!-- Appointments table / cards -->
+{% if appointments %}
+<!-- Desktop table -->
+<div class="card d-none d-md-block">
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th class="px-4 py-3">#</th>
+          <th class="py-3">Doctor</th>
+          <th class="py-3">Date &amp; Time</th>
+          <th class="py-3">Reason</th>
+          <th class="py-3">Status</th>
+          <th class="py-3 text-end px-4">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for appt in appointments %}
+        <tr>
+          <td class="px-4 py-3 text-muted" style="font-size:12px;">{{ forloop.counter }}</td>
+          <td class="py-3">
+            <div class="d-flex align-items-center gap-2">
+              {% if appt.doctor.profile_picture %}
+              <img src="{{ appt.doctor.profile_picture.url }}" class="avatar" style="border-radius:8px;" alt="" />
+              {% else %}
+              <div class="avatar-placeholder" style="border-radius:8px;">{{ appt.doctor.user.first_name|first }}</div>
+              {% endif %}
+              <div>
+                <div class="fw-semibold" style="font-size:13.5px;">Dr. {{ appt.doctor.user.get_full_name }}</div>
+                <div style="font-size:12px;color:var(--muted);">{{ appt.doctor.specialization }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="py-3">
+            <div class="fw-semibold" style="font-size:13.5px;">{{ appt.date|date:"d M Y" }}</div>
+            <div style="font-size:12px;color:var(--muted);">{{ appt.slot.start_time|time:"g:i A" }}</div>
+          </td>
+          <td class="py-3" style="max-width:200px;">
+            <span style="font-size:13px;">{{ appt.reason|truncatechars:50 }}</span>
+          </td>
+          <td class="py-3">
+            {% if appt.status == 'upcoming' or appt.status == 'scheduled' %}
+            <span class="badge badge-status" style="background:#fffbeb;color:#92400e;">
+              <i class="fa fa-clock me-1" style="font-size:9px;"></i>Upcoming
+            </span>
+            {% elif appt.status == 'completed' %}
+            <span class="badge badge-status" style="background:#ecfdf5;color:#065f46;">
+              <i class="fa fa-circle-check me-1" style="font-size:9px;"></i>Completed
+            </span>
+            {% elif appt.status == 'cancelled' %}
+            <span class="badge badge-status" style="background:#fef2f2;color:#991b1b;">
+              <i class="fa fa-circle-xmark me-1" style="font-size:9px;"></i>Cancelled
+            </span>
+            {% else %}
+            <span class="badge badge-status bg-secondary-subtle text-secondary">{{ appt.status|capfirst }}</span>
+            {% endif %}
+          </td>
+          <td class="py-3 text-end px-4">
+            <div class="d-flex gap-2 justify-content-end">
+              <a href="{% url 'appointments:detail' appt.pk %}" class="btn btn-sm btn-outline-primary">
+                <i class="fa fa-eye"></i>
+              </a>
+              {% if appt.status == 'upcoming' or appt.status == 'scheduled' %}
+              <button type="button" class="btn btn-sm btn-outline-danger"
+                      onclick="confirmCancel('{% url 'appointments:cancel_appointment' appt.pk %}')">
+                <i class="fa fa-xmark"></i>
+              </button>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Mobile cards -->
+<div class="d-md-none d-flex flex-column gap-3">
+  {% for appt in appointments %}
+  <div class="card p-3">
+    <div class="d-flex justify-content-between align-items-start mb-2">
+      <div class="d-flex gap-2 align-items-center">
+        <div class="avatar-placeholder" style="border-radius:8px;">{{ appt.doctor.user.first_name|first }}</div>
+        <div>
+          <div class="fw-semibold" style="font-size:13.5px;">Dr. {{ appt.doctor.user.get_full_name }}</div>
+          <div style="font-size:12px;color:var(--muted);">{{ appt.doctor.specialization }}</div>
+        </div>
+      </div>
+      {% if appt.status == 'upcoming' or appt.status == 'scheduled' %}
+      <span class="badge badge-status" style="background:#fffbeb;color:#92400e;">Upcoming</span>
+      {% elif appt.status == 'completed' %}
+      <span class="badge badge-status" style="background:#ecfdf5;color:#065f46;">Completed</span>
+      {% else %}
+      <span class="badge badge-status" style="background:#fef2f2;color:#991b1b;">Cancelled</span>
+      {% endif %}
+    </div>
+    <div style="font-size:13px;color:var(--muted);" class="mb-2">
+      <i class="fa fa-calendar me-1"></i>{{ appt.date|date:"d M Y" }}
+      &nbsp;·&nbsp;
+      <i class="fa fa-clock me-1"></i>{{ appt.slot.start_time|time:"g:i A" }}
+    </div>
+    <div style="font-size:13px;" class="mb-3">{{ appt.reason|truncatechars:80 }}</div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'appointment_detail' appt.pk %}" class="btn btn-sm btn-outline-primary flex-fill">View</a>
+      {% if appt.status == 'upcoming' or appt.status == 'scheduled' %}
+      <button type="button" class="btn btn-sm btn-outline-danger"
+              onclick="confirmCancel('{% url 'appointments:cancel_appointment' appt.pk %}')">Cancel</button>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="empty-state card py-5">
+  <i class="fa fa-calendar-xmark"></i>
+  <h5 class="mt-3">No appointments found</h5>
+  <p style="color:var(--muted);">
+    {% if request.GET.status and request.GET.status != 'all' %}
+    No {{ request.GET.status }} appointments.
+    {% else %}
+    You haven't booked any appointments yet.
+    {% endif %}
+  </p>
+  <a href="{% url 'doctors:doctor_list' %}" class="btn btn-primary mt-2">Book an Appointment</a>
+</div>
+{% endif %}
+
+<!-- Pagination -->
+{% if is_paginated %}
+<nav class="mt-4">
+  <ul class="pagination justify-content-center">
+    {% if page_obj.has_previous %}
+    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}"><i class="fa fa-chevron-left"></i></a></li>
+    {% endif %}
+    {% for n in page_obj.paginator.page_range %}
+    <li class="page-item {% if n == page_obj.number %}active{% endif %}">
+      <a class="page-link" href="?page={{ n }}&{{ request.GET.urlencode }}">{{ n }}</a>
+    </li>
+    {% endfor %}
+    {% if page_obj.has_next %}
+    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}"><i class="fa fa-chevron-right"></i></a></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
+<!-- Cancel confirmation modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;border:none;">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">Cancel Appointment?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <p style="color:var(--muted);">Are you sure you want to cancel this appointment? This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep Appointment</button>
+        <a id="cancelConfirmBtn" href="#" class="btn btn-danger">Yes, Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmCancel(url) {
+  document.getElementById('cancelConfirmBtn').href = url;
+  new bootstrap.Modal(document.getElementById('cancelModal')).show();
+}
+</script>
+{% endblock %}
