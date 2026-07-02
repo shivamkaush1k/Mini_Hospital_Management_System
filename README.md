@@ -1,0 +1,1 @@
+# Mini_Hospital_Managmnt_System
