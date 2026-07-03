@@ -158,7 +158,7 @@ def doctor_dashboard(request):
 
     return render(
         request,
-        "doctors/doctorsdashboard.html",
+        "doctors/dashboard.html",
         context,
     )
 

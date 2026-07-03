@@ -14,7 +14,17 @@ SECRET_KEY = "django-insecure-change-this-in-production"
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Empty ALLOWED_HOSTS was causing the CSRF failure whenever the site was
+# accessed via anything other than exactly "localhost"/"127.0.0.1".
+# Add any host/IP/tunnel domain you actually use to access the site.
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "0.0.0.0",
+    # "your-lan-ip",                     # e.g. "192.168.1.10"
+    # "your-tunnel-domain.ngrok-free.app",
+    # "your-codespace-name-8000.app.github.dev",
+]
 
 
 # ======================================================
@@ -202,7 +212,27 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # ======================================================
 # CSRF
 # ======================================================
-CSRF_TRUSTED_ORIGINS = []
+# Empty CSRF_TRUSTED_ORIGINS is the other half of the CSRF failure: if you
+# access the site over HTTPS through any proxy/tunnel (Codespaces, ngrok,
+# Replit, a custom domain, etc.), Django 4+ requires that origin listed here
+# or the POST gets rejected regardless of ALLOWED_HOSTS.
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    # "https://your-tunnel-domain.ngrok-free.app",
+    # "https://your-codespace-name-8000.app.github.dev",
+]
+
+# Only needed if you access the site over plain HTTP locally (default dev
+# server). If you switch to HTTPS in production, set these to True there.
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+
+# If you ever put this behind a reverse proxy (nginx, Codespaces, ngrok,
+# Render, etc.) that terminates HTTPS for you, uncomment these so Django
+# correctly detects the original request was secure:
+# SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# USE_X_FORWARDED_HOST = True
 
 
 # ======================================================
@@ -216,3 +246,7 @@ SESSION_COOKIE_AGE = 60 * 60 * 24  # 1 day
 # ======================================================
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5 MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
+
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"

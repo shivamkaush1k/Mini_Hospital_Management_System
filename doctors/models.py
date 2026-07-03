@@ -1,3 +1,4 @@
+import uuid 
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -16,7 +17,7 @@ class Doctor(models.Model):
         PSYCHIATRY = "Psychiatrist", "Psychiatrist"
         GYNECOLOGY = "Gynecologist", "Gynecologist"
         OPHTHALMOLOGY = "Ophthalmologist", "Ophthalmologist"
-
+    id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False,)
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -95,6 +96,8 @@ class DoctorSlot(models.Model):
         SATURDAY = "Saturday", "Saturday"
         SUNDAY = "Sunday", "Sunday"
 
+
+    id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False,)
     doctor = models.ForeignKey(
         Doctor,
         on_delete=models.CASCADE,

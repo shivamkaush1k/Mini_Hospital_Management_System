@@ -100,8 +100,8 @@
     <div class="card doctor-card h-100">
       <div class="card-body p-4">
         <div class="d-flex gap-3 mb-3">
-          {% if doctor.profile_picture %}
-          <img src="{{ doctor.profile_picture.url }}" class="avatar-lg" style="border-radius:14px;" alt="Dr." />
+          {% if doctor.user.profile.image %}
+          <img src="{{ doctor.user.profile.image.url }}" class="avatar-lg" style="border-radius:14px;" alt="Dr." />
           {% else %}
           <div class="avatar-placeholder" style="width:72px;height:72px;min-width:72px;border-radius:14px;font-size:1.4rem;">
             {{ doctor.user.first_name|first }}{{ doctor.user.last_name|first }}
@@ -113,20 +113,20 @@
               {{ doctor.specialization }}
             </span>
             <div style="font-size:12px;color:var(--muted);">
-              {{ doctor.qualifications|truncatechars:45 }}
+              {{ doctor.qualification|truncatechars:45 }}
             </div>
           </div>
         </div>
 
         <div class="d-flex flex-wrap gap-3 mb-3" style="font-size:13px;">
-          <div><i class="fa fa-briefcase me-1 text-muted"></i><strong>{{ doctor.experience_years|default:0 }}</strong> yrs exp</div>
+          <div><i class="fa fa-briefcase me-1 text-muted"></i><strong>{{ doctor.experience|default:0 }}</strong> yrs exp</div>
           <div><i class="fa fa-star me-1 text-warning"></i><strong>4.8</strong> rating</div>
           <div><i class="fa fa-indian-rupee-sign me-1 text-muted"></i><strong>₹{{ doctor.consultation_fee|default:"—" }}</strong></div>
         </div>
 
         <!-- Availability chips -->
         <div class="mb-3">
-          {% if doctor.is_available %}
+          {% if doctor.is_active %}
           <span class="badge" style="background:#ecfdf5;color:var(--secondary);border-radius:6px;font-size:11.5px;">
             <i class="fa fa-circle me-1" style="font-size:8px;"></i>Available Today
           </span>

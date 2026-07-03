@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Doctor Dashboard
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Welcome -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h2 class="fw-bold">
+                Welcome,
+                Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}
+            </h2>
+
+            <p class="text-muted">
+                Here's what's happening today.
+            </p>
+        </div>
+
+        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+
+            <a href="{% url 'appointments:appointment_list' %}"
+               class="btn btn-primary">
+
+                <i class="fa-solid fa-calendar-check me-2"></i>
+                View Appointments
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Statistics -->
+
+    <div class="row g-4 mb-5">
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <small class="text-muted">
+                                Today's Appointments
+                            </small>
+
+                            <h2 class="fw-bold mt-2">
+                                {{ today_appointments }}
+                            </h2>
+
+                        </div>
+
+                        <div class="fs-1 text-primary">
+                            <i class="fa-solid fa-calendar-day"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <small class="text-muted">
+                                Upcoming
+                            </small>
+
+                            <h2 class="fw-bold mt-2">
+                                {{ upcoming_appointments }}
+                            </h2>
+
+                        </div>
+
+                        <div class="fs-1 text-success">
+                            <i class="fa-solid fa-calendar-plus"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <small class="text-muted">
+                                Available Slots
+                            </small>
+
+                            <h2 class="fw-bold mt-2">
+                                {{ available_slots }}
+                            </h2>
+
+                        </div>
+
+                        <div class="fs-1 text-warning">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <small class="text-muted">
+                                Total Patients
+                            </small>
+
+                            <h2 class="fw-bold mt-2">
+                                {{ total_patients }}
+                            </h2>
+
+                        </div>
+
+                        <div class="fs-1 text-danger">
+                            <i class="fa-solid fa-user-group"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Doctor Information -->
+
+    <div class="row g-4">
+
+        <div class="col-lg-4">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-white">
+
+                    <h5 class="mb-0">
+                        Doctor Information
+                    </h5>
+
+                </div>
+
+                <div class="card-body text-center">
+                              {% if doctor.user.profile.image %}
+                              <img src="{{ doctor.user.profile.image.url }}" class="avatar-lg" style="border-radius:14px;" alt="Dr." />
+                              {% else %}
+                              <div class="avatar-placeholder" style="width:72px;height:72px;min-width:72px;border-radius:14px;font-size:1.4rem;">
+                                {{ doctor.user.first_name|first }}{{ doctor.user.last_name|first }}
+                            </div>
+                            {% endif %}
+                    <h4>
+                        Dr. {{ doctor.user.get_full_name }}
+                    </h4>
+
+                    <p class="text-muted">
+                        {{ doctor.specialization }}
+                    </p>
+
+                    <hr>
+
+                    <div class="text-start">
+
+                        <p>
+                            <strong>Email:</strong><br>
+                            {{ doctor.user.email }}
+                        </p>
+
+                        <p>
+                            <strong>Phone:</strong><br>
+                            {{ doctor.user.profile.phone }}
+                        </p>
+
+                        <p>
+                            <strong>Experience:</strong><br>
+                            {{ doctor.experience }} Years
+                        </p>
+
+                        <p class="mb-0">
+                            <strong>Consultation Fee:</strong><br>
+                            ₹{{ doctor.consultation_fee }}
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Recent Appointments -->
+
+        <div class="col-lg-8">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-white d-flex justify-content-between">
+
+                    <h5 class="mb-0">
+                        Recent Appointments
+                    </h5>
+
+                    <a href="{% url 'appointments:appointment_list' %}">
+                        View All
+                    </a>
+
+                </div>
+
+                <div class="table-responsive">
+
+                    <table class="table align-middle mb-0">
+
+                        <thead class="table-light">
+
+                        <tr>
+
+                            <th>Patient</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+
+                        </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                        {% for appointment in recent_appointments %}
+
+                            <tr>
+
+                                <td>
+
+                                    {{ appointment.patient.user.get_full_name }}
+
+                                </td>
+
+                                <td>
+
+                                    {{ appointment.appointment_date }}
+
+                                </td>
+
+                                <td>
+
+                                    {{ appointment.appointment_time }}
+
+                                </td>
+
+                                <td>
+
+                                    {% if appointment.status == "Scheduled" %}
+
+                                        <span class="badge bg-primary">
+                                            {{ appointment.status }}
+                                        </span>
+
+                                    {% elif appointment.status == "Completed" %}
+
+                                        <span class="badge bg-success">
+                                            {{ appointment.status }}
+                                        </span>
+
+                                    {% elif appointment.status == "Cancelled" %}
+
+                                        <span class="badge bg-danger">
+                                            {{ appointment.status }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge bg-secondary">
+                                            {{ appointment.status }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% empty %}
+
+                            <tr>
+
+                                <td colspan="4"
+                                    class="text-center py-5 text-muted">
+
+                                    No appointments found.
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Quick Actions -->
+
+    <div class="row mt-5">
+
+        <div class="col">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-header bg-white">
+
+                    <h5 class="mb-0">
+                        Quick Actions
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-3">
+
+                            <a href="{% url 'doctors:slot_list' %}"
+                               class="btn btn-outline-primary w-100">
+
+                                <i class="fa-solid fa-clock mb-2 d-block fs-3"></i>
+
+                                Manage Slots
+
+                            </a>
+
+                        </div>
+
+                        <div class="col-md-3">
+
+                            <a href="{% url 'appointments:appointment_list' %}"
+                               class="btn btn-outline-success w-100">
+
+                                <i class="fa-solid fa-calendar-check mb-2 d-block fs-3"></i>
+
+                                Appointments
+
+                            </a>
+
+                        </div>
+
+                        <div class="col-md-3">
+
+                            <a href="{% url 'patients:patient_list' %}"
+                               class="btn btn-outline-info w-100">
+
+                                <i class="fa-solid fa-users mb-2 d-block fs-3"></i>
+
+                                Patients
+
+                            </a>
+
+                        </div>
+
+                        <div class="col-md-3">
+
+                            <a href="{% url 'accounts:profile' %}"
+                               class="btn btn-outline-dark w-100">
+
+                                <i class="fa-solid fa-user-doctor mb-2 d-block fs-3"></i>
+
+                                My Profile
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

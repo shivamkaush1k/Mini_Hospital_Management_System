@@ -322,26 +322,44 @@ def today_appointments(request):
     )
 
 
+# @login_required
+# def doctor_slots_ajax(request, doctor_id):
+#     doctor = get_object_or_404(Doctor, pk=doctor_id)
+
+#     selected_date = request.GET.get("date")
+#     selected_date = parse_date(selected_date) if selected_date else None
+
+#     slots = doctor.slots.filter(is_active=True, is_booked=False)
+
+#     if selected_date:
+#         slots = slots.filter(start_time__date=selected_date)
+
+#     data = {
+#         "slots": [
+#             {
+#                 "id": slot.id,
+#                 "start_time": slot.start_time.strftime("%I:%M %p"),
+#                 "is_available": not slot.is_booked,
+#             }
+#             for slot in slots.order_by("start_time")
+#         ]
+#     }
+#     return JsonResponse(data)
+
+
 @login_required
 def doctor_slots_ajax(request, doctor_id):
-    doctor = get_object_or_404(Doctor, pk=doctor_id)
+    doctor = get_object_or_404(Doctor, id=doctor_id)
+    slots = doctor.slots.filter(is_active=True)
 
-    selected_date = request.GET.get("date")
-    selected_date = parse_date(selected_date) if selected_date else None
+    # optional: filter by date here if needed
 
-    slots = doctor.slots.filter(is_active=True, is_booked=False)
-
-    if selected_date:
-        slots = slots.filter(start_time__date=selected_date)
-
-    data = {
-        "slots": [
-            {
-                "id": slot.id,
-                "start_time": slot.start_time.strftime("%I:%M %p"),
-                "is_available": not slot.is_booked,
-            }
-            for slot in slots.order_by("start_time")
-        ]
-    }
-    return JsonResponse(data)
+    data = [
+        {
+            "id": slot.id,
+            "start_time": slot.start_time.strftime("%I:%M %p"),
+            "end_time": slot.end_time.strftime("%I:%M %p"),
+        }
+        for slot in slots
+    ]
+    return JsonResponse({"slots": data})

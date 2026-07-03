@@ -72,3 +72,35 @@ footer {
     padding: 6px 10px;
     border-radius: 8px;
 }
+
+/* Role badges (Doctor / Patient) used on profile & user list pages */
+.badge-role-doctor {
+    background-color: #0d6efd;
+}
+
+.badge-role-patient {
+    background-color: #6610f2;
+}
+
+/* Section cards used across profile / detail pages
+   (Personal Information, Professional Information, Medical Information, About) */
+.info-card .card-header {
+    font-weight: 600;
+    border-bottom: none;
+}
+
+.info-card table.table {
+    margin-bottom: 0;
+}
+
+.info-card table.table th,
+.info-card table.table td {
+    border-color: #f1f3f5;
+}
+
+/* Empty-state text inside a card body (e.g. "No appointments yet.") */
+.empty-state {
+    color: #adb5bd;
+    text-align: center;
+    padding: 24px 12px;
+}

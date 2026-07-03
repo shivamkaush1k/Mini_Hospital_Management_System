@@ -1,0 +1,113 @@
+{% load static %}
+
+<!-- Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="profile-stat">
+            <h5>{{ total_appointments }}</h5>
+            <small>Appointments</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="profile-stat">
+            <h5>{{ upcoming_appointments }}</h5>
+            <small>Upcoming</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="profile-stat">
+            <h5>{{ completed_appointments }}</h5>
+            <small>Completed</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="profile-stat">
+            <h5>{{ prescriptions_count }}</h5>
+            <small>Prescriptions</small>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+
+    <!-- Personal Information -->
+    <div class="col-lg-6">
+        <div class="card shadow border-0 mb-4 info-card">
+            <div class="card-header profile-section-header">
+                <i class="fa fa-user me-2"></i>Personal Information
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless profile-info-table mb-0">
+                    <tr><th>Username</th><td>{{ request.user.username }}</td></tr>
+                    <tr><th>Email</th><td>{{ request.user.email }}</td></tr>
+                    <tr><th>Phone</th><td>{{ profile.phone|default:"-" }}</td></tr>
+                    <tr><th>Gender</th><td>{{ profile.gender|default:"-" }}</td></tr>
+                    <tr><th>Date of Birth</th><td>{{ profile.date_of_birth|default:"-" }}</td></tr>
+                    <tr><th>Address</th><td>{{ profile.address|default:"-" }}</td></tr>
+                    <tr><th>City</th><td>{{ profile.city|default:"-" }}</td></tr>
+                    <tr><th>State</th><td>{{ profile.state|default:"-" }}</td></tr>
+                    <tr><th>Country</th><td>{{ profile.country|default:"-" }}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical Information -->
+    <div class="col-lg-6">
+        <div class="card shadow border-0 mb-4 info-card">
+            <div class="card-header profile-section-header">
+                <i class="fa fa-notes-medical me-2"></i>Medical Information
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless profile-info-table mb-0">
+                    <tr><th>Blood Group</th><td>{{ patient.blood_group|default:"-" }}</td></tr>
+                    <tr><th>Height</th><td>{{ patient.height|default:"-" }} cm</td></tr>
+                    <tr><th>Weight</th><td>{{ patient.weight|default:"-" }} kg</td></tr>
+                    <tr><th>Allergies</th><td>{{ patient.allergies|default:"None" }}</td></tr>
+                    <tr><th>Emergency Contact</th><td>{{ patient.emergency_contact_name|default:"-" }} ({{ patient.emergency_contact_phone|default:"-" }})</td></tr>
+                    <tr><th>Insurance Provider</th><td>{{ patient.insurance_provider|default:"-" }}</td></tr>
+                    <tr><th>Insurance Number</th><td>{{ patient.insurance_number|default:"-" }}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Recent Appointments -->
+<div class="card shadow border-0 mb-4 info-card">
+    <div class="card-header profile-section-header">
+        <i class="fa fa-clock-rotate-left me-2"></i>Recent Appointments
+    </div>
+    <div class="card-body p-0">
+        {% if recent_appointments %}
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Doctor</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in recent_appointments %}
+                        <tr>
+                            <td>Dr. {{ appt.slot.doctor.user.get_full_name|default:appt.slot.doctor.user.username }}</td>
+                            <td>{{ appt.appointment_date }}</td>
+                            <td>
+                                <span class="badge
+                                    {% if appt.status == 'COMPLETED' %}badge-status-completed
+                                    {% elif appt.status == 'CANCELLED' %}badge-status-cancelled
+                                    {% else %}badge-status-pending{% endif %}">
+                                    {{ appt.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="empty-state mb-0">No appointments yet.</p>
+        {% endif %}
+    </div>
+</div>

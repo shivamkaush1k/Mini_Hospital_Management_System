@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+import uuid
 from doctors.models import Doctor
 
 
@@ -15,6 +15,7 @@ class Patient(models.Model):
         AB_NEGATIVE = "AB-", "AB-"
         O_POSITIVE = "O+", "O+"
         O_NEGATIVE = "O-", "O-"
+    id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False,)
 
     user = models.OneToOneField(
         User,
@@ -81,6 +82,7 @@ class Patient(models.Model):
 
 
 class MedicalHistory(models.Model):
+    id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False,)
 
     patient = models.ForeignKey(
         Patient,

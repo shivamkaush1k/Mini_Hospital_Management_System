@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-
+import uuid
 app_name = "patients"
 
 urlpatterns = [
