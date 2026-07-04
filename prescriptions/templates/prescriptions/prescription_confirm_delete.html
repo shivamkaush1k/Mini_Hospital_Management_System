@@ -7,7 +7,7 @@
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
         <li class="breadcrumb-item">
-            <a href="{% url 'home' %}" class="text-decoration-none">Home</a>
+            <a href="{% url 'accounts:home' %}" class="text-decoration-none">Home</a>
         </li>
         <li class="breadcrumb-item">
             <a href="{% url 'prescriptions:prescription_list' %}" class="text-decoration-none">
@@ -56,43 +56,17 @@
 
                         <div class="col-md-6 mb-3">
                             <strong>Patient</strong><br>
-
-                            {% if prescription.patient %}
-                                {{ prescription.patient.user.get_full_name }}
-                            {% elif prescription.appointment.patient %}
-                                {{ prescription.appointment.patient.user.get_full_name }}
-                            {% else %}
-                                —
-                            {% endif %}
-
+                            {{ prescription.patient.user.get_full_name|default:"—" }}
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <strong>Doctor</strong><br>
-
-                            {% if prescription.doctor %}
-                                Dr. {{ prescription.doctor.user.get_full_name }}
-                            {% elif prescription.appointment.slot %}
-                                Dr. {{ prescription.appointment.slot.doctor.user.get_full_name }}
-                            {% elif prescription.appointment.doctor %}
-                                Dr. {{ prescription.appointment.doctor.user.get_full_name }}
-                            {% else %}
-                                —
-                            {% endif %}
-
+                            Dr. {{ prescription.doctor.user.get_full_name }}
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <strong>Date</strong><br>
-
-                            {% if prescription.created_at %}
-                                {{ prescription.created_at|date:"d M Y" }}
-                            {% elif prescription.date %}
-                                {{ prescription.date|date:"d M Y" }}
-                            {% else %}
-                                —
-                            {% endif %}
-
+                            {{ prescription.created_at|date:"d M Y" }}
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -100,17 +74,21 @@
                             {{ prescription.diagnosis|default:"—" }}
                         </div>
 
-                        {% if prescription.medicines %}
+                        <!--
+                            "medicines" is a related manager (reverse FK to
+                            PrescriptionMedicine), not a text field, so it
+                            must be iterated rather than printed directly.
+                        -->
+                        {% with meds=prescription.medicines.all %}
+                        {% if meds %}
                         <div class="col-12">
                             <strong>Medicines</strong><br>
-                            {{ prescription.medicines|truncatechars:150 }}
-                        </div>
-                        {% elif prescription.medications %}
-                        <div class="col-12">
-                            <strong>Medicines</strong><br>
-                            {{ prescription.medications|truncatechars:150 }}
+                            {% for med in meds %}
+                                {{ med.name }} ({{ med.dosage }}){% if not forloop.last %}, {% endif %}
+                            {% endfor %}
                         </div>
                         {% endif %}
+                        {% endwith %}
 
                     </div>
 

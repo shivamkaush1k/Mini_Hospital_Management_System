@@ -3,29 +3,34 @@
 {% load static %}
 
 {% block title %}
-{% if form.instance.pk %}
-Edit Slot
-{% else %}
-Add Slot
-{% endif %}
+    {% if form.instance.pk %}
+        Edit Slot
+    {% else %}
+        Add Slot
+    {% endif %}
 {% endblock %}
 
 {% block breadcrumb %}
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
         <li class="breadcrumb-item">
-            <a href="{% url 'home' %}" class="text-decoration-none">Home</a>
+            <a href="{% url 'accounts:home' %}" class="text-decoration-none">
+                Home
+            </a>
         </li>
+
         <li class="breadcrumb-item">
             <a href="{% url 'doctors:doctor_dashboard' %}" class="text-decoration-none">
                 Doctor Dashboard
             </a>
         </li>
+
         <li class="breadcrumb-item">
             <a href="{% url 'doctors:slot_list' %}" class="text-decoration-none">
                 My Slots
             </a>
         </li>
+
         <li class="breadcrumb-item active">
             {% if form.instance.pk %}
                 Edit Slot
@@ -40,15 +45,12 @@ Add Slot
 {% block content %}
 
 <div class="row justify-content-center">
-
     <div class="col-lg-8">
 
         <div class="card shadow-sm border-0">
 
             <div class="card-header bg-primary text-white py-3">
-
                 <h4 class="mb-0">
-
                     {% if form.instance.pk %}
                         <i class="fa-solid fa-pen-to-square me-2"></i>
                         Edit Appointment Slot
@@ -56,15 +58,12 @@ Add Slot
                         <i class="fa-solid fa-calendar-plus me-2"></i>
                         Create Appointment Slot
                     {% endif %}
-
                 </h4>
-
             </div>
 
             <div class="card-body p-4">
 
                 <form method="post">
-
                     {% csrf_token %}
 
                     {{ form|crispy }}
@@ -75,16 +74,11 @@ Add Slot
 
                         <a href="{% url 'doctors:slot_list' %}"
                            class="btn btn-outline-secondary">
-
                             <i class="fa-solid fa-arrow-left me-2"></i>
-
                             Back
-
                         </a>
 
-                        <button type="submit"
-                                class="btn btn-primary">
-
+                        <button type="submit" class="btn btn-primary">
                             {% if form.instance.pk %}
                                 <i class="fa-solid fa-floppy-disk me-2"></i>
                                 Update Slot
@@ -92,7 +86,6 @@ Add Slot
                                 <i class="fa-solid fa-plus me-2"></i>
                                 Create Slot
                             {% endif %}
-
                         </button>
 
                     </div>
@@ -106,39 +99,25 @@ Add Slot
         <div class="card mt-4 border-0 shadow-sm">
 
             <div class="card-header">
-
                 <h5 class="mb-0">
-
                     <i class="fa-solid fa-circle-info text-primary me-2"></i>
-
                     Guidelines
-
                 </h5>
-
             </div>
 
             <div class="card-body">
-
                 <ul class="mb-0">
-
                     <li>Select the correct consultation date.</li>
-
                     <li>Ensure the start time is earlier than the end time.</li>
-
                     <li>Do not create overlapping slots.</li>
-
                     <li>Inactive slots won't be visible to patients.</li>
-
                     <li>Booked slots should not be modified unless necessary.</li>
-
                 </ul>
-
             </div>
 
         </div>
 
     </div>
-
 </div>
 
 {% endblock %}

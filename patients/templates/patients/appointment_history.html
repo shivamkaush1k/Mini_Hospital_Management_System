@@ -72,7 +72,7 @@
     <table class="table mb-0">
       <thead>
         <tr>
-          <th class="px-4 py-3">#</th>
+          <th class="px-4 py-3">S.No.</th>
           <th class="py-3">Doctor</th>
           <th class="py-3">Date &amp; Time</th>
           <th class="py-3">Reason</th>
@@ -86,19 +86,19 @@
           <td class="px-4 py-3 text-muted" style="font-size:12px;">{{ forloop.counter }}</td>
           <td class="py-3">
             <div class="d-flex align-items-center gap-2">
-              {% if appt.doctor.profile_picture %}
-              <img src="{{ appt.doctor.profile_picture.url }}" class="avatar" style="border-radius:8px;" alt="" />
+              {% if appt.slot.doctor.user.profile.image %}
+              <img src="{{ appt.slot.doctor.user.profile.image.url }}" class="avatar" style="border-radius:8px;" alt="" />
               {% else %}
-              <div class="avatar-placeholder" style="border-radius:8px;">{{ appt.doctor.user.first_name|first }}</div>
+              <div class="avatar-placeholder" style="border-radius:8px;">{{ appt.slot.doctor.user.first_name|first }}</div>
               {% endif %}
               <div>
-                <div class="fw-semibold" style="font-size:13.5px;">Dr. {{ appt.doctor.user.get_full_name }}</div>
-                <div style="font-size:12px;color:var(--muted);">{{ appt.doctor.specialization }}</div>
+                <div class="fw-semibold" style="font-size:13.5px;">Dr. {{ appt.slot.doctor.user.get_full_name }}</div>
+                <div style="font-size:12px;color:var(--muted);">{{ appt.slot.doctor.specialization }}</div>
               </div>
             </div>
           </td>
           <td class="py-3">
-            <div class="fw-semibold" style="font-size:13.5px;">{{ appt.date|date:"d M Y" }}</div>
+            <div class="fw-semibold" style="font-size:13.5px;">{{ appt.appointment_date|date:"d M Y" }}</div>
             <div style="font-size:12px;color:var(--muted);">{{ appt.slot.start_time|time:"g:i A" }}</div>
           </td>
           <td class="py-3" style="max-width:200px;">
@@ -123,7 +123,7 @@
           </td>
           <td class="py-3 text-end px-4">
             <div class="d-flex gap-2 justify-content-end">
-              <a href="{% url 'appointments:detail' appt.pk %}" class="btn btn-sm btn-outline-primary">
+              <a href="{% url 'appointments:appointment_detail' appt.pk %}" class="btn btn-sm btn-outline-primary">
                 <i class="fa fa-eye"></i>
               </a>
               {% if appt.status == 'upcoming' or appt.status == 'scheduled' %}
@@ -147,10 +147,10 @@
   <div class="card p-3">
     <div class="d-flex justify-content-between align-items-start mb-2">
       <div class="d-flex gap-2 align-items-center">
-        <div class="avatar-placeholder" style="border-radius:8px;">{{ appt.doctor.user.first_name|first }}</div>
+        <div class="avatar-placeholder" style="border-radius:8px;">{{ appt.slot.doctor.user.first_name|first }}</div>
         <div>
-          <div class="fw-semibold" style="font-size:13.5px;">Dr. {{ appt.doctor.user.get_full_name }}</div>
-          <div style="font-size:12px;color:var(--muted);">{{ appt.doctor.specialization }}</div>
+          <div class="fw-semibold" style="font-size:13.5px;">Dr. {{ appt.slot.doctor.user.get_full_name }}</div>
+          <div style="font-size:12px;color:var(--muted);">{{ appt.slot.doctor.specialization }}</div>
         </div>
       </div>
       {% if appt.status == 'upcoming' or appt.status == 'scheduled' %}
@@ -162,13 +162,13 @@
       {% endif %}
     </div>
     <div style="font-size:13px;color:var(--muted);" class="mb-2">
-      <i class="fa fa-calendar me-1"></i>{{ appt.date|date:"d M Y" }}
+      <i class="fa fa-calendar me-1"></i>{{ appt.appointment_date|date:"d M Y" }}
       &nbsp;·&nbsp;
       <i class="fa fa-clock me-1"></i>{{ appt.slot.start_time|time:"g:i A" }}
     </div>
     <div style="font-size:13px;" class="mb-3">{{ appt.reason|truncatechars:80 }}</div>
     <div class="d-flex gap-2">
-      <a href="{% url 'appointment_detail' appt.pk %}" class="btn btn-sm btn-outline-primary flex-fill">View</a>
+      <a href="{% url 'appointments:appointment_detail' appt.pk %}" class="btn btn-sm btn-outline-primary flex-fill">View</a>
       {% if appt.status == 'upcoming' or appt.status == 'scheduled' %}
       <button type="button" class="btn btn-sm btn-outline-danger"
               onclick="confirmCancel('{% url 'appointments:cancel_appointment' appt.pk %}')">Cancel</button>

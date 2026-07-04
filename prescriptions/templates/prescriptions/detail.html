@@ -58,17 +58,34 @@
 
 <tr>
 
+<!--
+    "medicines" is a related manager (reverse FK to PrescriptionMedicine),
+    not a single text field, so each medicine (with its own dosage,
+    frequency, duration) is listed individually rather than reading
+    prescription.medicines / prescription.dosage directly, neither of
+    which exist as flat fields on Prescription.
+-->
 <th>Medicines</th>
 
-<td>{{ prescription.medicines }}</td>
+<td>
 
-</tr>
+{% with meds=prescription.medicines.all %}
+    {% if meds %}
+        <ul class="mb-0 ps-3">
+        {% for med in meds %}
+            <li>
+                {{ med.name }} — {{ med.dosage }}, {{ med.frequency }}
+                {% if med.duration %}({{ med.duration }}){% endif %}
+                {% if med.notes %}<br><small class="text-muted">{{ med.notes }}</small>{% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        —
+    {% endif %}
+{% endwith %}
 
-<tr>
-
-<th>Dosage</th>
-
-<td>{{ prescription.dosage }}</td>
+</td>
 
 </tr>
 
@@ -76,7 +93,7 @@
 
 <th>Advice</th>
 
-<td>{{ prescription.advice }}</td>
+<td>{{ prescription.advice|default:"—" }}</td>
 
 </tr>
 
@@ -84,7 +101,7 @@
 
 <th>Follow-up Date</th>
 
-<td>{{ prescription.follow_up_date }}</td>
+<td>{{ prescription.follow_up_date|default:"—" }}</td>
 
 </tr>
 
@@ -92,7 +109,7 @@
 
 <div class="mt-4">
 
-<a href="{% url 'prescriptions:list' %}"
+<a href="{% url 'prescriptions:prescription_list' %}"
 
 class="btn btn-secondary">
 
@@ -100,7 +117,7 @@ Back
 
 </a>
 
-<a href="{% url 'prescriptions:update' prescription.id %}"
+<a href="{% url 'prescriptions:prescription_update' prescription.pk %}"
 
 class="btn btn-warning">
 
@@ -108,7 +125,7 @@ Edit
 
 </a>
 
-<a href="{% url 'prescriptions:print' prescription.id %}"
+<a href="{% url 'prescriptions:print_prescription' prescription.pk %}"
 
 class="btn btn-success">
 

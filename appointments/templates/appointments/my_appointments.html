@@ -7,10 +7,10 @@
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
         <li class="breadcrumb-item">
-            <a href="{% url 'home' %}" class="text-decoration-none">Home</a>
+            <a href="{% url 'accounts:home' %}" class="text-decoration-none">Home</a>
         </li>
         <li class="breadcrumb-item">
-            <a href="{% url 'patients:patient_dashboard' %}" class="text-decoration-none">
+            <a href="{% url 'patients:dashboard' %}" class="text-decoration-none">
                 Dashboard
             </a>
         </li>
@@ -32,7 +32,7 @@
         </h2>
 
         <p class="text-muted mb-0">
-            View and manage your appointments.
+            View your appointment history and upcoming bookings.
         </p>
     </div>
 
@@ -61,16 +61,15 @@
             <table class="table table-hover align-middle mb-0">
 
                 <thead class="table-light">
-
-                <tr>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Doctor</th>
-                    <th>Department</th>
-                    <th>Status</th>
-                    <th class="text-center">Actions</th>
-                </tr>
-
+                    <tr>
+                        <th>Appointment No.</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Doctor</th>
+                        <th>Specialization</th>
+                        <th>Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
                 </thead>
 
                 <tbody>
@@ -79,46 +78,24 @@
 
                 <tr>
 
+                    <td>{{ appointment.appointment_number }}</td>
+
                     <td>
-                        {% if appointment.appointment_date %}
-                            {{ appointment.appointment_date|date:"d M Y" }}
-                        {% elif appointment.date %}
-                            {{ appointment.date|date:"d M Y" }}
-                        {% elif appointment.start_time %}
-                            {{ appointment.start_time|date:"d M Y" }}
-                        {% else %}
-                            —
-                        {% endif %}
+                        {{ appointment.appointment_date|date:"d M Y" }}
                     </td>
 
                     <td>
-                        {% if appointment.slot %}
-                            {{ appointment.slot.start_time|time:"h:i A" }}
-                        {% elif appointment.start_time %}
-                            {{ appointment.start_time|time:"h:i A" }}
-                        {% else %}
-                            —
-                        {% endif %}
+                        {{ appointment.slot.start_time|time:"h:i A" }}
+                        -
+                        {{ appointment.slot.end_time|time:"h:i A" }}
                     </td>
 
                     <td>
-                        {% if appointment.slot %}
-                            Dr. {{ appointment.slot.doctor.user.get_full_name }}
-                        {% elif appointment.doctor %}
-                            Dr. {{ appointment.doctor.user.get_full_name }}
-                        {% else %}
-                            —
-                        {% endif %}
+                        Dr. {{ appointment.slot.doctor.user.get_full_name }}
                     </td>
 
                     <td>
-                        {% if appointment.slot %}
-                            {{ appointment.slot.doctor.specialization }}
-                        {% elif appointment.doctor %}
-                            {{ appointment.doctor.specialization }}
-                        {% else %}
-                            —
-                        {% endif %}
+                        {{ appointment.slot.doctor.specialization }}
                     </td>
 
                     <td>
@@ -155,14 +132,16 @@
                     <td class="text-center">
 
                         <a href="{% url 'appointments:appointment_detail' appointment.pk %}"
-                           class="btn btn-sm btn-outline-primary">
+                           class="btn btn-sm btn-outline-primary"
+                           title="View">
                             <i class="fa-solid fa-eye"></i>
                         </a>
 
                         {% if appointment.status != "Cancelled" and appointment.status != "Completed" %}
 
                         <a href="{% url 'appointments:cancel_appointment' appointment.pk %}"
-                           class="btn btn-sm btn-outline-danger">
+                           class="btn btn-sm btn-outline-danger"
+                           title="Cancel">
                             <i class="fa-solid fa-ban"></i>
                         </a>
 

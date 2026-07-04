@@ -1,42 +1,91 @@
 {% extends "base.html" %}
 
-{% block title %}My Prescriptions{% endblock %}
-
-{% block breadcrumb %}
-<nav aria-label="breadcrumb" class="mb-4">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-            <a href="{% url 'accounts:home' %}">Home</a>
-        </li>
-        <li class="breadcrumb-item active">My Prescriptions</li>
-    </ol>
-</nav>
-{% endblock %}
+{% block title %}Prescriptions{% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-header">
-        <h4 class="mb-0">My Prescriptions</h4>
-    </div>
-    <div class="card-body">
-        {% if prescriptions %}
-            <div class="list-group">
-                {% for prescription in prescriptions %}
-                    <a href="{% url 'prescriptions:prescription_detail' prescription.pk %}"
-                       class="list-group-item list-group-item-action">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <strong>{{ prescription.diagnosis }}</strong><br>
-                                <small>Doctor: {{ prescription.appointment.slot.doctor.user.get_full_name }}</small>
-                            </div>
-                            <small>{{ prescription.created_at|date:"d M Y" }}</small>
-                        </div>
-                    </a>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p class="mb-0">No prescriptions found.</p>
-        {% endif %}
-    </div>
+
+<h2 class="mb-4">
+
+Prescription Records
+
+</h2>
+
+<div class="card shadow">
+
+<div class="card-body">
+
+<table class="table table-hover">
+
+<thead class="table-success">
+
+<tr>
+
+<th>#</th>
+
+<th>Patient</th>
+
+<th>Doctor</th>
+
+<th>Date</th>
+
+<th>Diagnosis</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for prescription in prescriptions %}
+
+<tr>
+
+<td>{{ forloop.counter }}</td>
+
+<td>{{ prescription.patient.user.get_full_name }}</td>
+
+<td>Dr. {{ prescription.doctor.user.get_full_name }}</td>
+
+<td>{{ prescription.created_at|date:"d M Y" }}</td>
+
+<td>{{ prescription.diagnosis }}</td>
+
+<td>
+
+<a href="{% url 'prescriptions:prescription_detail' prescription.pk %}"
+
+class="btn btn-primary btn-sm">
+
+View
+
+</a>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+
+<td colspan="6" class="text-center">
+
+No prescriptions found.
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
 </div>
+
+</div>
+
 {% endblock %}

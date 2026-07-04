@@ -1,48 +1,81 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Appointment Booked{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'home' %}" class="text-decoration-none">
+                Home
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'appointments:my_appointments' %}" class="text-decoration-none">
+                My Appointments
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            Appointment Booked
+        </li>
+    </ol>
+</nav>
+{% endblock %}
 
 {% block content %}
 
 <div class="row justify-content-center">
 
-<div class="col-lg-6">
+    <div class="col-lg-6">
 
-<div class="card shadow text-center">
+        <div class="card shadow border-0 text-center">
 
-<div class="card-body p-5">
+            <div class="card-body p-5">
 
-<div class="text-success mb-4">
+                <div class="mb-4">
 
-<i class="bi bi-check-circle-fill" style="font-size:80px;"></i>
+                    <i class="fa-solid fa-circle-check text-success"
+                       style="font-size:80px;"></i>
 
-</div>
+                </div>
 
-<h2>
+                <h2 class="fw-bold mb-3">
+                    Appointment Booked Successfully!
+                </h2>
 
-Appointment Booked Successfully!
+                <p class="text-muted mb-4">
+                    Your appointment has been scheduled successfully.
+                    You can view its details anytime from your appointment history.
+                </p>
 
-</h2>
+                <div class="d-flex justify-content-center gap-3">
 
-<p>
+                    <a href="{% url 'appointments:my_appointments' %}"
+                       class="btn btn-primary">
 
-Your appointment has been scheduled successfully.
+                        <i class="fa-solid fa-calendar-check me-2"></i>
 
-</p>
+                        My Appointments
 
-<a href="{% url 'appointments:list' %}"
+                    </a>
 
-class="btn btn-primary">
+                    <a href="{% url 'doctors:doctor_list' %}"
+                       class="btn btn-outline-secondary">
 
-View My Appointments
+                        <i class="fa-solid fa-user-doctor me-2"></i>
 
-</a>
+                        Book Another
 
-</div>
+                    </a>
 
-</div>
+                </div>
 
-</div>
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 

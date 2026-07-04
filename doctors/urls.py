@@ -11,7 +11,7 @@ urlpatterns = [
     path("create/", views.doctor_create, name="doctor_create"),
     path("<uuid:pk>/edit/", views.doctor_update, name="doctor_update"),
     path("<uuid:pk>/delete/", views.doctor_delete, name="doctor_delete"),
-
+    path("slots/<uuid:pk>/toggle/",views.slot_toggle,name="slot_toggle",),
     path("dashboard/", views.doctor_dashboard, name="doctor_dashboard"),
 
     path("slots/", views.slot_list, name="slot_list"),

@@ -3,233 +3,296 @@
 
 {% block title %}Book Appointment{% endblock %}
 
-{% block sidebar %}
-<aside class="sidebar">
-  <div class="sidebar-section-label">Patient Menu</div>
-  <a class="sidebar-link" href="{% url 'patients:dashboard' %}"><i class="fa fa-gauge"></i> Dashboard</a>
-  <a class="sidebar-link" href="{% url 'doctors:doctor_list' %}"><i class="fa fa-user-doctor"></i> Find Doctors</a>
-  <a class="sidebar-link active" href="#"><i class="fa fa-calendar-plus"></i> Book Appointment</a>
-  <a class="sidebar-link" href="{% url 'appointments:my_appointments' %}"><i class="fa fa-calendar"></i> Appointments</a>
-  <a class="sidebar-link" href="{% url 'prescriptions:my_prescriptions' %}"><i class="fa fa-file-prescription"></i> Prescriptions</a>
-  <a class="sidebar-link" href="{% url 'patients:medical_history' %}"><i class="fa fa-clock-rotate-left"></i> Medical History</a>
-  <div class="sidebar-section-label mt-2">Account</div>
-  <a class="sidebar-link" href="{% url 'accounts:profile' %}"><i class="fa fa-circle-user"></i> My Profile</a>
-  <a class="sidebar-link text-danger" href="{% url 'accounts:logout' %}"><i class="fa fa-right-from-bracket"></i> Sign Out</a>
-</aside>
-{% endblock %}
-
 {% block breadcrumb %}
 <nav aria-label="breadcrumb" class="mb-3">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{% url 'accounts:home' %}" class="text-decoration-none text-muted">Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'doctors:doctor_list' %}" class="text-decoration-none text-muted">Doctors</a></li>
-    <li class="breadcrumb-item active">Book Appointment</li>
-  </ol>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'accounts:home' %}" class="text-decoration-none text-muted">
+                Home
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'doctors:doctor_list' %}" class="text-decoration-none text-muted">
+                Doctors
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            Book Appointment
+        </li>
+    </ol>
 </nav>
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <h1><i class="fa fa-calendar-plus me-2 text-primary"></i>Book Appointment</h1>
+
+<div class="page-header mb-4">
+    <h2>
+        <i class="fa fa-calendar-plus text-primary me-2"></i>
+        Book Appointment
+    </h2>
 </div>
 
 <div class="row g-4">
-  <!-- Doctor Info Card -->
-  <div class="col-12 col-lg-4">
-    <div class="card p-4">
-      <div class="text-center mb-3">
-        {% if doctor.profile_picture %}
-        <img src="{{ doctor.profile_picture.url }}" class="avatar-lg mb-3" style="border-radius:16px;" alt="Dr." />
-        {% else %}
-        <div class="avatar-placeholder mx-auto mb-3" style="width:80px;height:80px;font-size:1.7rem;border-radius:16px;">
-          {{ doctor.user.first_name|first }}{{ doctor.user.last_name|first }}
-        </div>
-        {% endif %}
-        <h5 class="fw-bold mb-1">Dr. {{ doctor.user.get_full_name }}</h5>
-        <span class="badge mb-2" style="background:var(--primary-light);color:var(--primary);border-radius:6px;font-weight:600;">
-          {{ doctor.specialization }}
-        </span>
-        <p style="font-size:13px;color:var(--muted);margin:0;">{{ doctor.qualifications }}</p>
-      </div>
 
-      <hr style="border-color:var(--border);" />
+    <!-- Doctor Card -->
+    <div class="col-lg-4">
 
-      <div class="d-flex flex-column gap-2" style="font-size:13.5px;">
-        <div class="d-flex justify-content-between">
-          <span style="color:var(--muted);"><i class="fa fa-briefcase me-2"></i>Experience</span>
-          <strong>{{ doctor.experience_years|default:0 }} years</strong>
-        </div>
-        <div class="d-flex justify-content-between">
-          <span style="color:var(--muted);"><i class="fa fa-indian-rupee-sign me-2"></i>Consult Fee</span>
-          <strong>₹{{ doctor.consultation_fee|default:"—" }}</strong>
-        </div>
-        <div class="d-flex justify-content-between">
-          <span style="color:var(--muted);"><i class="fa fa-star me-2 text-warning"></i>Rating</span>
-          <strong>4.8 / 5.0</strong>
-        </div>
-        <div class="d-flex justify-content-between">
-          <span style="color:var(--muted);"><i class="fa fa-language me-2"></i>Languages</span>
-          <strong>English, Hindi</strong>
-        </div>
-      </div>
+        <div class="card shadow-sm">
 
-      <hr style="border-color:var(--border);" />
-      <a href="{% url 'doctors:doctor_detail' doctor.pk %}" class="btn btn-outline-primary btn-sm w-100">
-        <i class="fa fa-circle-info me-1"></i>View Full Profile
-      </a>
-    </div>
+            <div class="card-body text-center">
 
-    <!-- Important note -->
-    <div class="card mt-3 p-3" style="background:#fffbeb;border-color:#fde68a;">
-      <div class="d-flex gap-2" style="font-size:13px;color:#92400e;">
-        <i class="fa fa-triangle-exclamation mt-1" style="color:#f59e0b;"></i>
-        <div>
-          <strong>Please note:</strong> Cancellations must be made at least 2 hours before the scheduled appointment.
-        </div>
-      </div>
-    </div>
-  </div>
+                {% if doctor.user.profile.image %}
+                    <img src="{{ doctor.user.profile.image.url }}"
+                         class="rounded-circle mb-3"
+                         width="100"
+                         height="100"
+                         style="object-fit:cover;">
+                {% else %}
+                    <div class="avatar-placeholder mx-auto mb-3"
+                         style="width:100px;height:100px;">
+                        {{ doctor.user.first_name|first }}
+                    </div>
+                {% endif %}
 
-  <!-- Booking Form -->
-  <div class="col-12 col-lg-8">
-    <div class="card">
-      <div class="card-header py-3 px-4">
-        <h6 class="mb-0"><i class="fa fa-calendar me-2 text-primary"></i>Select Date & Time Slot</h6>
-      </div>
-      <div class="card-body p-4">
-        <form method="post" novalidate>
-          {% csrf_token %}
+                <h5 class="fw-bold">
+                    Dr. {{ doctor.user.get_full_name }}
+                </h5>
 
-          {% if form.non_field_errors %}
-          <div class="alert alert-danger" style="border-radius:8px;font-size:13.5px;">
-            <i class="fa fa-circle-exclamation me-2"></i>
-            {% for e in form.non_field_errors %}{{ e }}{% endfor %}
-          </div>
-          {% endif %}
+                <span class="badge bg-primary">
+                    {{ doctor.specialization }}
+                </span>
 
-          <!-- Date picker -->
-          <div class="mb-4">
-            <label class="form-label fw-semibold" style="font-size:13px;">Appointment Date *</label>
-            <input type="date" name="date" id="dateField" class="form-control {% if form.date.errors %}is-invalid{% endif %}"
-                   value="{{ form.date.value|default:'' }}"
-                   min="{% now 'Y-m-d' %}"
-                   onchange="loadSlots(this.value)" />
-            {% if form.date.errors %}
-            <div class="invalid-feedback">{{ form.date.errors|join:", " }}</div>
-            {% endif %}
-          </div>
-
-          <!-- Slot selection -->
-          <div class="mb-4">
-            <label class="form-label fw-semibold" style="font-size:13px;">Available Time Slots *</label>
-            <input type="hidden" name="slot" id="selectedSlot" value="{{ form.slot.value|default:'' }}" />
-
-            {% if form.slot.errors %}
-            <div class="text-danger mb-2" style="font-size:13px;">
-              <i class="fa fa-circle-exclamation me-1"></i>{{ form.slot.errors|join:", " }}
             </div>
-            {% endif %}
 
-            <div id="slotsContainer">
-              {% if slots %}
-              <div class="d-flex flex-wrap gap-2">
-                {% for slot in slots %}
-                <button type="button"
-                        class="btn slot-btn {% if not slot.is_available %}btn-outline-secondary disabled{% elif form.slot.value == slot.pk|stringformat:'s' %}btn-primary{% else %}btn-outline-primary{% endif %}"
-                        {% if not slot.is_available %}disabled title="Already booked"{% endif %}
-                        onclick="selectSlot(this, '{{ slot.pk }}')">
-                  {{ slot.start_time|time:"g:i A" }}
-                  {% if not slot.is_available %}
-                  <i class="fa fa-lock ms-1" style="font-size:10px;"></i>
-                  {% endif %}
-                </button>
-                {% endfor %}
-              </div>
-              {% else %}
-              <div class="empty-state" style="padding:2rem;">
-                <i class="fa fa-calendar-xmark"></i>
-                <p style="margin:0;">
-                  {% if form.date.value %}
-                  No slots available for this date. Try another date.
-                  {% else %}
-                  Please select a date to see available slots.
-                  {% endif %}
-                </p>
-              </div>
-              {% endif %}
+            <hr>
+
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Experience</span>
+                    <strong>{{ doctor.experience|default:"—" }}</strong>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Consultation Fee</span>
+                    <strong>₹{{ doctor.consultation_fee }}</strong>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <span>Phone</span>
+                    <strong>{{ doctor.phone }}</strong>
+                </div>
+
             </div>
-          </div>
 
-          <!-- Reason -->
-          <div class="mb-4">
-            <label class="form-label fw-semibold" style="font-size:13px;">Reason for Visit *</label>
-            <textarea name="reason" rows="3"
-                      class="form-control {% if form.reason.errors %}is-invalid{% endif %}"
-                      placeholder="Briefly describe your symptoms or reason for the consultation…">{{ form.reason.value|default:'' }}</textarea>
-            {% if form.reason.errors %}
-            <div class="invalid-feedback">{{ form.reason.errors|join:", " }}</div>
-            {% endif %}
-          </div>
+        </div>
 
-          <!-- Notes -->
-          <div class="mb-4">
-            <label class="form-label fw-semibold" style="font-size:13px;">Additional Notes <span style="color:var(--muted);font-weight:400;">(Optional)</span></label>
-            <textarea name="notes" rows="2" class="form-control"
-                      placeholder="Any allergies, current medications, or specific concerns…">{{ form.notes.value|default:'' }}</textarea>
-          </div>
-
-          <!-- Confirm -->
-          <div class="d-flex gap-3">
-            <a href="{% url 'doctors:doctor_list' %}" class="btn btn-outline-secondary px-4">
-              <i class="fa fa-arrow-left me-2"></i>Back
-            </a>
-            <button type="submit" class="btn btn-primary px-5 flex-fill">
-              <i class="fa fa-calendar-check me-2"></i>Confirm Appointment
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
-  </div>
+
+    <!-- Booking Form -->
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm">
+
+            <div class="card-header">
+                <h5 class="mb-0">
+                    Select Date & Time
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+
+                        <label class="form-label">
+                            Appointment Date
+                        </label>
+
+                        <!--
+                            This date field is not part of AppointmentForm on purpose:
+                            the view derives the appointment date from the selected
+                            slot's own .date, so this input is only used to drive
+                            loadSlots() and never needs a name/submit value.
+                        -->
+                        <input
+                            type="date"
+                            id="dateField"
+                            class="form-control"
+                            min="{% now 'Y-m-d' %}"
+                            onchange="loadSlots(this.value)"
+                        >
+
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Appointment Time
+                        </label>
+                        {{ form.appointment_time }}
+                        {% if form.appointment_time.errors %}
+                        <div class="text-danger small">
+                            {{ form.appointment_time.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+
+                        <label class="form-label">
+                            Available Slots
+                        </label>
+
+                        <!--
+                            Render the hidden slot field OUTSIDE #slotsContainer.
+                            loadSlots() replaces slotsContainer.innerHTML entirely,
+                            so if id_slot lived inside that div it would be wiped
+                            out the first time slots are loaded.
+                        -->
+                        {{ form.slot.as_hidden }}
+
+                        <div id="slotsContainer">
+                            <div class="text-center py-5 text-muted">
+                                Select a date to view available slots.
+                            </div>
+                        </div>
+
+                        {% if form.slot.errors %}
+                        <div class="text-danger small mt-2">
+                            {{ form.slot.errors }}
+                        </div>
+                        {% endif %}
+
+                    </div>
+
+                    <div class="mb-4">
+
+                        <label class="form-label">
+                            Reason
+                        </label>
+
+                        {{ form.reason }}
+
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+
+                        <a href="{% url 'doctors:doctor_detail' doctor.pk %}"
+                           class="btn btn-secondary">
+
+                            Back
+
+                        </a>
+
+                        <button class="btn btn-primary">
+
+                            Confirm Appointment
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
+
 <script>
-function selectSlot(btn, slotId) {
-  document.querySelectorAll('.slot-btn').forEach(b => {
-    if (!b.disabled) { b.classList.remove('btn-primary'); b.classList.add('btn-outline-primary'); }
-  });
-  btn.classList.remove('btn-outline-primary');
-  btn.classList.add('btn-primary');
-  document.getElementById('selectedSlot').value = slotId;
+
+function selectSlot(id, btn) {
+
+    document.querySelectorAll(".slot-btn").forEach(function (b) {
+        b.classList.remove("btn-primary");
+        b.classList.add("btn-outline-primary");
+    });
+
+    btn.classList.remove("btn-outline-primary");
+    btn.classList.add("btn-primary");
+
+    const input = document.getElementById("id_slot");
+
+    if (input) {
+        input.value = id;
+    } else {
+        console.error("Hidden input 'id_slot' not found.");
+    }
+
 }
 
 function loadSlots(date) {
-  if (!date) return;
-  const container = document.getElementById('slotsContainer');
-  container.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div> Loading slots…</div>';
-  fetch(`{% url 'appointments:doctor_slots_ajax' doctor.pk %}?date=${date}`)
-    .then(r => r.json())
-    .then(data => {
-      if (!data.slots || !data.slots.length) {
-        container.innerHTML = '<div class="empty-state" style="padding:2rem;"><i class="fa fa-calendar-xmark"></i><p style="margin:0;">No slots available for this date.</p></div>';
-        return;
-      }
-      let html = '<div class="d-flex flex-wrap gap-2">';
-      data.slots.forEach(s => {
-        if (s.is_available) {
-          html += `<button type="button" class="btn slot-btn btn-outline-primary" onclick="selectSlot(this,'${s.id}')">${s.start_time}</button>`;
-        } else {
-          html += `<button type="button" class="btn slot-btn btn-outline-secondary" disabled title="Already booked">${s.start_time} <i class="fa fa-lock ms-1" style="font-size:10px;"></i></button>`;
-        }
-      });
-      html += '</div>';
-      container.innerHTML = html;
-    })
-    .catch(() => {
-      container.innerHTML = '<div class="alert alert-warning">Could not load slots. Please try again.</div>';
-    });
+
+    if (!date) return;
+
+    fetch("{% url 'appointments:doctor_slots_ajax' doctor.pk %}?date=" + date)
+
+        .then(r => r.json())
+
+        .then(data => {
+
+            let html = "";
+
+            if (data.slots.length === 0) {
+
+                html = "<div class='alert alert-warning'>No slots available.</div>";
+
+            } else {
+
+                html = "<div class='d-flex flex-wrap gap-2'>";
+
+                data.slots.forEach(function (slot) {
+
+                    if (slot.is_available) {
+
+                        html += `
+                            <button type="button"
+                                    class="btn btn-outline-primary slot-btn"
+                                    onclick="selectSlot('${slot.id}', this)">
+                                ${slot.start_time}
+                            </button>
+                        `;
+
+                    } else {
+
+                        html += `
+                            <button type="button"
+                                    class="btn btn-outline-secondary"
+                                    disabled>
+                                ${slot.start_time}
+                            </button>
+                        `;
+
+                    }
+
+                });
+
+                html += "</div>";
+
+            }
+
+            document.getElementById("slotsContainer").innerHTML = html;
+
+        });
+
 }
+
 </script>
+
 {% endblock %}

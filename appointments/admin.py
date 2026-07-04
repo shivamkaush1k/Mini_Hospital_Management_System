@@ -6,10 +6,10 @@ from .models import Appointment
 class AppointmentAdmin(admin.ModelAdmin):
     list_display = (
         "appointment_number",
-        "doctor",
+        "get_doctor",
         "patient",
         "appointment_date",
-        "slot",
+        "appointment_time",
         "status",
         "created_at",
     )
@@ -29,3 +29,8 @@ class AppointmentAdmin(admin.ModelAdmin):
         "-appointment_date",
         "slot",
     )
+
+    def get_doctor(self, obj):
+        return obj.slot.doctor
+    get_doctor.short_description = "Doctor"
+    get_doctor.admin_order_field = "slot__doctor"

@@ -7,7 +7,7 @@
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
         <li class="breadcrumb-item">
-            <a href="{% url 'home' %}" class="text-decoration-none">Home</a>
+            <a href="{% url 'accounts:home' %}" class="text-decoration-none">Home</a>
         </li>
         <li class="breadcrumb-item">
             <a href="{% url 'patients:patient_list' %}" class="text-decoration-none">Patients</a>
@@ -67,17 +67,17 @@
 
                     <tr>
                         <th>Gender</th>
-                        <td>{{ patient.gender|default:"—" }}</td>
+                        <td>{{ patient.user.profile.gender|default:"—" }}</td>
                     </tr>
 
                     <tr>
                         <th>Date of Birth</th>
-                        <td>{{ patient.date_of_birth|date:"d M Y"|default:"—" }}</td>
+                        <td>{{ patient.user.profile.date_of_birth|date:"d M Y"|default:"—" }}</td>
                     </tr>
 
                     <tr>
                         <th>Address</th>
-                        <td>{{ patient.address|default:"—" }}</td>
+                        <td>{{ patient.user.profile.address|default:"—" }}</td>
                     </tr>
 
                 </table>

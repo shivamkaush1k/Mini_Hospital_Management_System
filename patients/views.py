@@ -194,19 +194,10 @@ def delete_medical_record(request, pk):
         },
     )
 
+from django.contrib import messages
+from django.shortcuts import redirect
 
-@login_required
-def appointment_history(request):
 
-    appointments = request.user.patient.appointments.all()
-
-    return render(
-        request,
-        "patients/appointment_history.html",
-        {
-            "appointments": appointments,
-        },
-    )
 
 
 @login_required
@@ -221,5 +212,68 @@ def prescription_history(request):
         "patients/prescription_history.html",
         {
             "prescriptions": prescriptions,
+        },
+    )
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.shortcuts import redirect, render
+
+from appointments.models import Appointment
+
+
+@login_required
+def appointment_history(request):
+
+    if not hasattr(request.user, "patient"):
+        messages.error(request, "Only patients can view appointment history.")
+        return redirect("accounts:dashboard")
+
+    patient = request.user.patient
+
+    base_qs = patient.appointments.select_related(
+        "slot",
+        "slot__doctor",
+        "slot__doctor__user",
+    )
+
+    status = request.GET.get("status", "all")
+
+    appointments = base_qs.order_by("-appointment_date", "-slot__start_time")
+
+    if status == "upcoming":
+        # "Upcoming" isn't a stored status value — it means the appointment
+        # hasn't been completed or cancelled yet.
+        appointments = appointments.filter(
+            status__in=[
+                Appointment.Status.PENDING,
+                Appointment.Status.CONFIRMED,
+            ]
+        )
+    elif status == "completed":
+        appointments = appointments.filter(status=Appointment.Status.COMPLETED)
+    elif status == "cancelled":
+        appointments = appointments.filter(status=Appointment.Status.CANCELLED)
+    # status == "all" (or anything unrecognized) -> no filter applied
+
+    upcoming_count = base_qs.filter(
+        status__in=[
+            Appointment.Status.PENDING,
+            Appointment.Status.CONFIRMED,
+        ]
+    ).count()
+
+    paginator = Paginator(appointments, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    return render(
+        request,
+        "patients/appointment_history.html",
+        {
+            "appointments": page_obj,
+            "page_obj": page_obj,
+            "is_paginated": page_obj.has_other_pages(),
+            "upcoming_count": upcoming_count,
         },
     )

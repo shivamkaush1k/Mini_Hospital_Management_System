@@ -1,3 +1,4 @@
+from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -32,11 +33,6 @@ class Profile(models.Model):
         null=True
     )
 
-    phone = models.CharField(
-        max_length=15,
-        blank=True
-    )
-
     gender = models.CharField(
         max_length=10,
         choices=Gender.choices,
@@ -64,11 +60,9 @@ class Profile(models.Model):
         max_length=100,
         default="India"
     )
+    phone = models.CharField(max_length=10, validators=[RegexValidator(r'^\d{10}$', 'Enter a valid 10-digit phone number.')],blank=True)
+    pincode = models.CharField(max_length=6,validators=[RegexValidator(r'^\d{6}$', 'Enter a valid 6-digit PIN code.')],blank=True)
 
-    pincode = models.CharField(
-        max_length=10,
-        blank=True
-    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -102,3 +96,4 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} ({self.role})"
+    

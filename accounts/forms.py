@@ -127,7 +127,7 @@ class ProfileForm(forms.ModelForm):
                 }
             ),
 
-            "phone": forms.TextInput(
+            "phone": forms.NumberInput(
                 attrs={
                     "class": "form-control"
                 }
@@ -151,7 +151,7 @@ class ProfileForm(forms.ModelForm):
                 }
             ),
 
-            "pincode": forms.TextInput(
+            "pincode": forms.NumberInput(
                 attrs={
                     "class": "form-control"
                 }

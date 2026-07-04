@@ -4,33 +4,27 @@
 
 {% block content %}
 
-<h2 class="mb-4">
-
-Prescription Records
-
-</h2>
+<h2>My Prescriptions</h2>
 
 <div class="card shadow">
 
 <div class="card-body">
 
-<table class="table table-hover">
+<table class="table table-striped">
 
-<thead class="table-success">
+<thead class="table-info">
 
 <tr>
 
-<th>#</th>
-
-<th>Patient</th>
+<th>Date</th>
 
 <th>Doctor</th>
 
-<th>Date</th>
-
 <th>Diagnosis</th>
 
-<th>Action</th>
+<th>Medicines</th>
+
+<th>Advice</th>
 
 </tr>
 
@@ -42,27 +36,29 @@ Prescription Records
 
 <tr>
 
-<td>{{ forloop.counter }}</td>
-
-<td>{{ prescription.patient.user.get_full_name }}</td>
+<td>{{ prescription.created_at|date:"d M Y" }}</td>
 
 <td>Dr. {{ prescription.doctor.user.get_full_name }}</td>
 
-<td>{{ prescription.created_at|date:"d M Y" }}</td>
-
 <td>{{ prescription.diagnosis }}</td>
 
+<!--
+    "medicines" is a related manager (reverse FK to PrescriptionMedicine),
+    not a text field, so it must be iterated rather than printed directly.
+-->
 <td>
-
-<a href="{% url 'prescriptions:detail' prescription.id %}"
-
-class="btn btn-primary btn-sm">
-
-View
-
-</a>
-
+    {% with meds=prescription.medicines.all %}
+        {% if meds %}
+            {% for med in meds %}
+                {{ med.name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        {% else %}
+            —
+        {% endif %}
+    {% endwith %}
 </td>
+
+<td>{{ prescription.advice|default:"—" }}</td>
 
 </tr>
 
@@ -70,9 +66,9 @@ View
 
 <tr>
 
-<td colspan="6" class="text-center">
+<td colspan="5">
 
-No prescriptions found.
+No prescriptions available.
 
 </td>
 

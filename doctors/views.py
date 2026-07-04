@@ -179,7 +179,7 @@ def slot_list(request):
 
 @login_required
 def slot_create(request):
-    form = DoctorSlotForm(request.POST or None)
+    form = DoctorSlotForm(request.POST or None,doctor=request.user.doctor,)
 
     if form.is_valid():
         slot = form.save(commit=False)
@@ -200,10 +200,7 @@ def slot_update(request, pk):
         doctor=request.user.doctor,
     )
 
-    form = DoctorSlotForm(
-        request.POST or None,
-        instance=slot,
-    )
+    form = DoctorSlotForm(request.POST or None,instance=slot,doctor=request.user.doctor,)
 
     if form.is_valid():
 
@@ -265,3 +262,30 @@ def appointment_history(request):
         "doctors/appointment_history.html",
         {"appointments": appointments},
     )
+
+@login_required
+def slot_toggle(request, pk):
+
+    slot = get_object_or_404(
+        DoctorSlot,
+        pk=pk,
+        doctor=request.user.doctor,
+    )
+
+    # Don't allow disabling a booked slot
+    if slot.is_booked:
+        messages.warning(
+            request,
+            "Booked slots cannot be disabled."
+        )
+        return redirect("doctors:slot_list")
+
+    slot.is_active = not slot.is_active
+    slot.save()
+
+    if slot.is_active:
+        messages.success(request, "Slot enabled successfully.")
+    else:
+        messages.success(request, "Slot disabled successfully.")
+
+    return redirect("doctors:slot_list")

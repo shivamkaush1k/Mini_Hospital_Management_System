@@ -1,46 +1,109 @@
 from datetime import date
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.utils import timezone
-from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 
-from .forms import (
-    AppointmentForm,
-    AppointmentStatusForm,
-    AppointmentSearchForm,
-)
-
+from .forms import AppointmentForm, AppointmentSearchForm, AppointmentStatusForm
 from .models import Appointment
-
 from doctors.models import Doctor, DoctorSlot
-from patients.models import Patient
 
 from utils.email_client import send_email
 from utils.google_calendar import create_appointment_events
 
 
-# =========================
+# ==========================================================
+# HELPERS
+# ==========================================================
+def _is_staff(user):
+    return user.is_staff
+
+
+def _is_doctor(user):
+    return hasattr(user, "doctor")
+
+
+def _is_patient(user):
+    return hasattr(user, "patient")
+
+
+def _can_access_appointment(user, appointment):
+    if _is_staff(user):
+        return True
+    if _is_doctor(user) and appointment.slot.doctor_id == user.doctor.id:
+        return True
+    if _is_patient(user) and appointment.patient_id == user.patient.id:
+        return True
+    return False
+
+
+def _can_modify_status(user, appointment):
+    if _is_staff(user):
+        return True
+    if _is_doctor(user) and appointment.slot.doctor_id == user.doctor.id:
+        return True
+    return False
+
+
+def _can_cancel_appointment(user, appointment):
+    if _is_staff(user):
+        return True
+    if _is_doctor(user) and appointment.slot.doctor_id == user.doctor.id:
+        return True
+    if _is_patient(user) and appointment.patient_id == user.patient.id:
+        return True
+    return False
+
+
+def _slot_has_capacity(slot, appointment_date):
+    booked_count = slot.appointments.filter(
+        appointment_date=appointment_date,
+        status__in=[
+            Appointment.Status.PENDING,
+            Appointment.Status.CONFIRMED,
+        ],
+    ).count()
+    return booked_count < slot.max_patients
+
+
+def _appointment_time_taken(slot, appointment_date, appointment_time):
+    return Appointment.objects.filter(
+        slot=slot,
+        appointment_date=appointment_date,
+        appointment_time=appointment_time,
+        status__in=[
+            Appointment.Status.PENDING,
+            Appointment.Status.CONFIRMED,
+        ],
+    ).exists()
+
+
+# ==========================================================
 # APPOINTMENT LIST
-# =========================
+# ==========================================================
 @login_required
 def appointment_list(request):
+    user = request.user
+    appointments = Appointment.objects.select_related(
+        "patient__user",
+        "slot__doctor__user",
+    ).order_by("-appointment_date", "-appointment_time")
 
-    appointments = (
-        Appointment.objects
-        .select_related(
-            "patient__user",
-            "slot__doctor__user",
-        )
-        .all()
-    )
+    if _is_staff(user):
+        pass
+    elif _is_doctor(user):
+        appointments = appointments.filter(slot__doctor=user.doctor)
+    elif _is_patient(user):
+        appointments = appointments.filter(patient=user.patient)
+    else:
+        appointments = Appointment.objects.none()
 
     form = AppointmentSearchForm(request.GET or None)
 
     if form.is_valid():
-
         patient = form.cleaned_data.get("patient")
         doctor = form.cleaned_data.get("doctor")
         appointment_date = form.cleaned_data.get("appointment_date")
@@ -74,126 +137,111 @@ def appointment_list(request):
     )
 
 
-# =========================
-# BOOK APPOINTMENT (FORM UI)
-# =========================
+# ==========================================================
+# BOOK APPOINTMENT
+# ==========================================================
 @login_required
+@transaction.atomic
 def book_appointment_form(request, doctor_id):
-    doctor = get_object_or_404(Doctor, id=doctor_id)
+    doctor = get_object_or_404(
+        Doctor.objects.select_related("user"),
+        pk=doctor_id,
+    )
 
-    if not hasattr(request.user, "patient"):
-        messages.error(request, "Please complete your patient profile first.")
-        return redirect("accounts:dashboard")
-
-    if hasattr(request.user, "profile") and request.user.profile.role != "PATIENT":
+    if not _is_patient(request.user):
         messages.error(request, "Only patients can book appointments.")
         return redirect("accounts:dashboard")
 
     patient = request.user.patient
-    form = AppointmentForm(request.POST or None)
+
+    if request.method == "POST":
+        form = AppointmentForm(request.POST, doctor=doctor)
+
+        if form.is_valid():
+            slot = get_object_or_404(
+                DoctorSlot.objects.select_for_update().select_related("doctor__user"),
+                pk=form.cleaned_data["slot"].pk,
+                doctor=doctor,
+                is_active=True,
+            )
+
+            # The slot already carries its own date, so we derive the
+            # appointment date from it instead of expecting a separate
+            # "appointment_date" field on the form (the form doesn't have one).
+            appointment_date = slot.date
+            appointment_time = form.cleaned_data["appointment_time"]
+
+            if not (slot.start_time <= appointment_time < slot.end_time):
+                form.add_error(
+                    "appointment_time",
+                    (
+                        f"Please select a time between "
+                        f"{slot.start_time.strftime('%I:%M %p')} and "
+                        f"{slot.end_time.strftime('%I:%M %p')}."
+                    ),
+                )
+
+            elif not _slot_has_capacity(slot, appointment_date):
+                form.add_error(
+                    "slot",
+                    "This slot is already full.",
+                )
+
+            elif _appointment_time_taken(slot, appointment_date, appointment_time):
+                form.add_error(
+                    "appointment_time",
+                    "This appointment time has already been booked.",
+                )
+
+            else:
+                appointment = Appointment.objects.create(
+                    patient=patient,
+                    slot=slot,
+                    appointment_date=appointment_date,
+                    appointment_time=appointment_time,
+                    reason=form.cleaned_data["reason"],
+                    status=Appointment.Status.PENDING,
+                )
+
+                try:
+                    create_appointment_events(appointment)
+                except Exception as e:
+                    print("Calendar error:", e)
+
+                try:
+                    send_email(
+                        trigger="BOOKING_CONFIRMATION",
+                        email=patient.user.email,
+                        subject="Appointment Confirmed",
+                        patient=patient.user.get_full_name(),
+                        doctor=doctor.user.get_full_name(),
+                        date=appointment.appointment_date.strftime("%d %b %Y"),
+                        time=appointment.appointment_time.strftime("%I:%M %p"),
+                    )
+                except Exception as e:
+                    print("Email error:", e)
+
+                messages.success(request, "Appointment booked successfully.")
+                return redirect("appointments:my_appointments")
+    else:
+        form = AppointmentForm(doctor=doctor)
 
     return render(
         request,
         "appointments/book.html",
         {
-            "form": form,
             "doctor": doctor,
             "patient": patient,
+            "form": form,
         },
     )
-# =========================
-# BOOK APPOINTMENT (API - FINAL CORE LOGIC)
-# =========================
-@transaction.atomic
-@login_required
-def book_appointment(request):
-    """
-    FINAL BOOKING FLOW:
-    - race condition safe
-    - slot locking
-    - calendar integration
-    - email trigger
-    """
-
-    if request.method != "POST":
-        return JsonResponse({"error": "POST required"}, status=400)
-
-    # validate patient
-    try:
-        patient = Patient.objects.select_related("user").get(user=request.user)
-    except Patient.DoesNotExist:
-        return JsonResponse({"error": "Only patients can book"}, status=403)
-
-    doctor_id = request.POST.get("doctor_id")
-    slot_id = request.POST.get("slot_id")
-
-    if not doctor_id or not slot_id:
-        return JsonResponse({"error": "Missing data"}, status=400)
-
-    doctor = get_object_or_404(Doctor, id=doctor_id)
-
-    # LOCK SLOT (prevents double booking)
-    slot = DoctorSlot.objects.select_for_update().get(
-        id=slot_id,
-        doctor=doctor
-    )
-
-    # validations
-    if slot.is_booked:
-        return JsonResponse({"error": "Slot already booked"}, status=400)
-
-    if slot.start_time < timezone.now():
-        return JsonResponse({"error": "Cannot book past slot"}, status=400)
-
-    # mark slot booked
-    slot.is_booked = True
-    slot.save()
-
-    # Create appointment.
-    # NOTE: Appointment has no direct `doctor` field anywhere else in this
-    # codebase — the doctor is always reached via `slot__doctor` (see
-    # appointment_list, doctor_queue, today_appointments, etc). Passing
-    # doctor=doctor here would raise a TypeError/FieldError since
-    # Appointment.objects.create() doesn't accept an unknown kwarg. Removed.
-    appointment = Appointment.objects.create(
-        patient=patient,
-        slot=slot,
-        appointment_date=slot.start_time.date(),
-    )
-
-    # calendar integration
-    try:
-        create_appointment_events(appointment)
-    except Exception as e:
-        print("Calendar error:", e)
-
-    # email notification (serverless)
-    try:
-        send_email(
-            trigger="BOOKING_CONFIRMATION",
-            email=patient.user.email,
-            subject="Appointment Confirmed",
-            patient=patient.user.username,
-            doctor=doctor.user.username,
-            date=str(slot.start_time.date()),
-            time=str(slot.start_time.time())
-        )
-    except Exception as e:
-        print("Email error:", e)
-
-    return JsonResponse({
-        "success": True,
-        "message": "Appointment booked successfully",
-        "appointment_id": appointment.id
-    })
 
 
-# =========================
+# ==========================================================
 # APPOINTMENT DETAIL
-# =========================
+# ==========================================================
 @login_required
 def appointment_detail(request, pk):
-
     appointment = get_object_or_404(
         Appointment.objects.select_related(
             "patient__user",
@@ -202,83 +250,116 @@ def appointment_detail(request, pk):
         pk=pk,
     )
 
+    if not _can_access_appointment(request.user, appointment):
+        messages.error(request, "Access denied.")
+        return redirect("accounts:dashboard")
+
     return render(
         request,
-        "appointments/appointment_detail.html",
+        "appointments/detail.html",
         {"appointment": appointment},
     )
 
 
-# =========================
+# ==========================================================
 # UPDATE STATUS
-# =========================
+# ==========================================================
 @login_required
 def update_status(request, pk):
-    appointment = get_object_or_404(Appointment, pk=pk)
+    appointment = get_object_or_404(
+        Appointment.objects.select_related("slot__doctor", "patient__user"),
+        pk=pk,
+    )
+
+    if not _can_modify_status(request.user, appointment):
+        messages.error(request, "Access denied.")
+        return redirect("accounts:dashboard")
+
     form = AppointmentStatusForm(request.POST or None, instance=appointment)
 
-    if form.is_valid():
+    if request.method == "POST" and form.is_valid():
         form.save()
         messages.success(request, "Appointment updated.")
         return redirect("appointments:appointment_detail", pk=appointment.pk)
 
-    return render(request, "appointments/status_form.html", {"form": form, "appointment": appointment})
+    return render(
+        request,
+        "appointments/status_form.html",
+        {
+            "form": form,
+            "appointment": appointment,
+        },
+    )
 
 
-# =========================
+# ==========================================================
 # CANCEL APPOINTMENT
-# =========================
+# ==========================================================
 @login_required
 def cancel_appointment(request, pk):
+    appointment = get_object_or_404(
+        Appointment.objects.select_related("slot__doctor", "patient__user"),
+        pk=pk,
+    )
 
-    appointment = get_object_or_404(Appointment, pk=pk)
+    if not _can_cancel_appointment(request.user, appointment):
+        messages.error(request, "Access denied.")
+        return redirect("accounts:dashboard")
 
     if request.method == "POST":
-
         appointment.status = Appointment.Status.CANCELLED
-        appointment.save()
-
+        appointment.save(update_fields=["status"])
         messages.success(request, "Appointment cancelled.")
-
-        # FIX: was redirect("appointment_detail", appointment.pk) — an
-        # un-namespaced name with a positional arg. The URLconf used
-        # throughout this app is namespaced ("appointments:..."), and
-        # appointment_detail expects a `pk` kwarg.
         return redirect("appointments:appointment_detail", pk=appointment.pk)
 
     return render(
         request,
-        "appointments/cancel_appointment.html",
+        "appointments/cancel_appointement.html",
         {"appointment": appointment},
     )
 
 
-# =========================
+# ==========================================================
 # DELETE APPOINTMENT
-# =========================
+# ==========================================================
 @login_required
 def delete_appointment(request, pk):
-    appointment = get_object_or_404(Appointment, pk=pk)
+    appointment = get_object_or_404(
+        Appointment.objects.select_related("slot__doctor", "patient__user"),
+        pk=pk,
+    )
+
+    if not _can_cancel_appointment(request.user, appointment):
+        messages.error(request, "Access denied.")
+        return redirect("accounts:dashboard")
 
     if request.method == "POST":
         appointment.delete()
         messages.success(request, "Appointment deleted.")
         return redirect("appointments:appointment_list")
 
-    return render(request, "appointments/delete_appointment.html", {"appointment": appointment})
+    return render(
+        request,
+        "appointments/delete_appointment.html",
+        {"appointment": appointment},
+    )
 
 
-# =========================
-# DOCTOR DASHBOARD QUEUE
-# =========================
+# ==========================================================
+# DOCTOR QUEUE
+# ==========================================================
 @login_required
 def doctor_queue(request):
-
-    doctor = request.user.doctor
+    if not _is_doctor(request.user):
+        messages.error(request, "Access denied.")
+        return redirect("accounts:dashboard")
 
     appointments = Appointment.objects.filter(
-        slot__doctor=doctor
-    ).select_related("patient__user")
+        slot__doctor=request.user.doctor
+    ).select_related(
+        "patient__user",
+        "slot__doctor__user",
+    ).order_by("appointment_date", "appointment_time")
 
     return render(
         request,
@@ -287,13 +368,18 @@ def doctor_queue(request):
     )
 
 
-# =========================
+# ==========================================================
 # PATIENT APPOINTMENTS
-# =========================
+# ==========================================================
 @login_required
 def my_appointments(request):
+    if not _is_patient(request.user):
+        messages.error(request, "Access denied.")
+        return redirect("accounts:dashboard")
 
-    appointments = request.user.patient.appointments.all()
+    appointments = request.user.patient.appointments.select_related(
+        "slot__doctor__user"
+    ).all().order_by("-appointment_date", "-appointment_time")
 
     return render(
         request,
@@ -302,18 +388,22 @@ def my_appointments(request):
     )
 
 
-# =========================
-# TODAY APPOINTMENTS (DOCTOR)
-# =========================
+# ==========================================================
+# TODAY'S APPOINTMENTS
+# ==========================================================
 @login_required
 def today_appointments(request):
-
-    doctor = request.user.doctor
+    if not _is_doctor(request.user):
+        messages.error(request, "Access denied.")
+        return redirect("accounts:dashboard")
 
     appointments = Appointment.objects.filter(
-        slot__doctor=doctor,
+        slot__doctor=request.user.doctor,
         appointment_date=date.today(),
-    )
+    ).select_related(
+        "patient__user",
+        "slot__doctor__user",
+    ).order_by("appointment_time")
 
     return render(
         request,
@@ -322,44 +412,39 @@ def today_appointments(request):
     )
 
 
-# @login_required
-# def doctor_slots_ajax(request, doctor_id):
-#     doctor = get_object_or_404(Doctor, pk=doctor_id)
-
-#     selected_date = request.GET.get("date")
-#     selected_date = parse_date(selected_date) if selected_date else None
-
-#     slots = doctor.slots.filter(is_active=True, is_booked=False)
-
-#     if selected_date:
-#         slots = slots.filter(start_time__date=selected_date)
-
-#     data = {
-#         "slots": [
-#             {
-#                 "id": slot.id,
-#                 "start_time": slot.start_time.strftime("%I:%M %p"),
-#                 "is_available": not slot.is_booked,
-#             }
-#             for slot in slots.order_by("start_time")
-#         ]
-#     }
-#     return JsonResponse(data)
-
-
+# ==========================================================
+# AJAX: DOCTOR SLOTS BY DATE
+# ==========================================================
 @login_required
 def doctor_slots_ajax(request, doctor_id):
-    doctor = get_object_or_404(Doctor, id=doctor_id)
-    slots = doctor.slots.filter(is_active=True)
+    doctor = get_object_or_404(Doctor, pk=doctor_id)
 
-    # optional: filter by date here if needed
+    selected_date = parse_date(request.GET.get("date"))
+    slots = doctor.slots.filter(
+        is_active=True
+    ).order_by("date", "start_time")
 
-    data = [
-        {
-            "id": slot.id,
+    # data must be initialized unconditionally, otherwise a missing/invalid
+    # "date" query param leaves `data` undefined and the loop below raises
+    # NameError.
+    data = {"slots": []}
+
+    if selected_date:
+        slots = slots.filter(date=selected_date)
+
+    for slot in slots:
+        available = True
+
+        if selected_date:
+            available = _slot_has_capacity(slot, selected_date)
+
+        data["slots"].append({
+            "id": str(slot.id),
+            "date": slot.date.strftime("%Y-%m-%d"),
             "start_time": slot.start_time.strftime("%I:%M %p"),
             "end_time": slot.end_time.strftime("%I:%M %p"),
-        }
-        for slot in slots
-    ]
-    return JsonResponse({"slots": data})
+            "is_available": available,
+            "max_patients": slot.max_patients,
+        })
+
+    return JsonResponse(data)

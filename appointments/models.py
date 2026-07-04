@@ -41,6 +41,7 @@ class Appointment(models.Model):
     )
 
     appointment_date = models.DateField()
+    appointment_time = models.TimeField()
 
     reason = models.TextField()
 
@@ -80,11 +81,12 @@ class Appointment(models.Model):
         ]
 
     def clean(self):
-
-        if self.slot.day != self.appointment_date.strftime("%A"):
-            raise ValidationError(
-                "Selected slot does not match the appointment day."
-            )
+        super().clean()
+        
+        if not self.slot_id or not self.appointment_date:
+            return
+        if self.slot.date != self.appointment_date:
+            raise ValidationError("Selected slot does not match the appointment date.")
 
     @property
     def doctor(self):

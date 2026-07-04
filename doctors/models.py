@@ -1,7 +1,9 @@
-import uuid 
-from django.db import models
+import uuid
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class Doctor(models.Model):
@@ -17,21 +19,25 @@ class Doctor(models.Model):
         PSYCHIATRY = "Psychiatrist", "Psychiatrist"
         GYNECOLOGY = "Gynecologist", "Gynecologist"
         OPHTHALMOLOGY = "Ophthalmologist", "Ophthalmologist"
-    id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False,)
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        related_name="doctor"
+        related_name="doctor",
     )
 
     specialization = models.CharField(
         max_length=50,
-        choices=Specialization.choices
+        choices=Specialization.choices,
     )
 
-    qualification = models.CharField(
-        max_length=150
-    )
+    qualification = models.CharField(max_length=150)
 
     experience = models.PositiveIntegerField(
         help_text="Years of experience"
@@ -39,47 +45,46 @@ class Doctor(models.Model):
 
     consultation_fee = models.DecimalField(
         max_digits=8,
-        decimal_places=2
+        decimal_places=2,
     )
 
     department = models.CharField(
         max_length=100,
-        blank=True
+        blank=True,
     )
 
     license_number = models.CharField(
         max_length=100,
-        blank=True
+        blank=True,
     )
 
-    room_number = models.CharField(
-        max_length=20
-    )
+    room_number = models.CharField(max_length=20)
 
-    bio = models.TextField(
-        blank=True
-    )
+    bio = models.TextField(blank=True)
 
     rating = models.DecimalField(
         max_digits=2,
         decimal_places=1,
-        default=5.0
+        default=5.0,
     )
 
-    is_active = models.BooleanField(
-        default=True
+    is_active = models.BooleanField(default=True)
+
+    phone = models.CharField(
+        _("Phone Number"),
+        max_length=15,
+        blank=True,
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["user__first_name", "user__last_name"]
+        ordering = [
+            "user__first_name",
+            "user__last_name",
+        ]
 
     def __str__(self):
         return f"Dr. {self.user.get_full_name()}"
@@ -87,27 +92,19 @@ class Doctor(models.Model):
 
 class DoctorSlot(models.Model):
 
-    class WeekDay(models.TextChoices):
-        MONDAY = "Monday", "Monday"
-        TUESDAY = "Tuesday", "Tuesday"
-        WEDNESDAY = "Wednesday", "Wednesday"
-        THURSDAY = "Thursday", "Thursday"
-        FRIDAY = "Friday", "Friday"
-        SATURDAY = "Saturday", "Saturday"
-        SUNDAY = "Sunday", "Sunday"
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
 
-
-    id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False,)
     doctor = models.ForeignKey(
         Doctor,
         on_delete=models.CASCADE,
-        related_name="slots"
+        related_name="slots",
     )
 
-    day = models.CharField(
-        max_length=10,
-        choices=WeekDay.choices
-    )
+    date = models.DateField()
 
     start_time = models.TimeField()
 
@@ -121,6 +118,10 @@ class DoctorSlot(models.Model):
         default=True
     )
 
+    is_booked = models.BooleanField(
+        default=False
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True
     )
@@ -131,29 +132,32 @@ class DoctorSlot(models.Model):
 
     class Meta:
         ordering = [
-            "day",
+            "date",
             "start_time",
         ]
 
-        unique_together = (
-            "doctor",
-            "day",
-            "start_time",
-            "end_time",
-        )
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "doctor",
+                    "date",
+                    "start_time",
+                    "end_time",
+                ],
+                name="unique_doctor_slot",
+            )
+        ]
 
     def clean(self):
-
         if self.start_time >= self.end_time:
             raise ValidationError(
                 "End time must be later than start time."
             )
 
     def __str__(self):
-
         return (
             f"Dr. {self.doctor.user.get_full_name()} | "
-            f"{self.day} | "
+            f"{self.date} | "
             f"{self.start_time.strftime('%H:%M')} - "
             f"{self.end_time.strftime('%H:%M')}"
         )

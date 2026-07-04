@@ -7,7 +7,9 @@
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
         <li class="breadcrumb-item">
-            <a href="{% url 'home' %}" class="text-decoration-none">Home</a>
+            <a href="{% url 'home' %}" class="text-decoration-none">
+                Home
+            </a>
         </li>
         <li class="breadcrumb-item">
             <a href="{% url 'doctors:doctor_dashboard' %}" class="text-decoration-none">
@@ -26,6 +28,7 @@
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
 
     <div>
+
         <h2 class="fw-bold mb-1">
             <i class="fa-solid fa-calendar-day text-primary me-2"></i>
             Today's Appointments
@@ -34,10 +37,12 @@
         <p class="text-muted mb-0">
             Manage today's patient appointments.
         </p>
+
     </div>
 
     <span class="badge bg-primary fs-6">
-        {{ appointments|length }} Appointment{{ appointments|length|pluralize }}
+        {{ appointments|length }}
+        Appointment{{ appointments|length|pluralize }}
     </span>
 
 </div>
@@ -45,10 +50,12 @@
 <div class="card shadow-sm border-0">
 
     <div class="card-header">
+
         <h5 class="mb-0">
             <i class="fa-solid fa-clock me-2 text-primary"></i>
             Appointment Schedule
         </h5>
+
     </div>
 
     <div class="card-body p-0">
@@ -60,6 +67,7 @@
             <table class="table table-hover align-middle mb-0">
 
                 <thead class="table-light">
+
                     <tr>
                         <th>Time</th>
                         <th>Patient</th>
@@ -67,6 +75,7 @@
                         <th>Status</th>
                         <th class="text-center">Action</th>
                     </tr>
+
                 </thead>
 
                 <tbody>
@@ -76,40 +85,48 @@
                     <tr>
 
                         <td>
-                            {% if appointment.slot %}
-                                {{ appointment.slot.start_time|time:"h:i A" }}
-                            {% elif appointment.start_time %}
-                                {{ appointment.start_time|time:"h:i A" }}
-                            {% else %}
-                                —
-                            {% endif %}
+
+                            {{ appointment.slot.start_time|time:"h:i A" }}
+                            -
+                            {{ appointment.slot.end_time|time:"h:i A" }}
+
                         </td>
 
                         <td>
 
                             <div class="d-flex align-items-center">
 
-                                {% if appointment.patient.user.profile.photo %}
-                                    <img src="{{ appointment.patient.user.profile.photo.url }}"
+                                {% if appointment.patient.user.profile.image %}
+
+                                    <img src="{{ appointment.patient.user.profile.image.url }}"
                                          width="45"
                                          height="45"
                                          class="rounded-circle me-3"
                                          style="object-fit:cover;">
+
                                 {% else %}
+
                                     <div class="avatar-placeholder me-3"
                                          style="width:45px;height:45px;">
+
                                         {{ appointment.patient.user.first_name|first }}
+
                                     </div>
+
                                 {% endif %}
 
                                 <div>
 
                                     <div class="fw-semibold">
+
                                         {{ appointment.patient.user.get_full_name }}
+
                                     </div>
 
                                     <small class="text-muted">
-                                        {{ appointment.patient.blood_group }}
+
+                                        {{ appointment.patient.blood_group|default:"Blood Group N/A" }}
+
                                     </small>
 
                                 </div>
@@ -125,7 +142,9 @@
                             <br>
 
                             <small class="text-muted">
-                                {{ appointment.patient.user.profile.phone|default:"—" }}
+
+                                {{ appointment.patient.user.profile.phone_number|default:"—" }}
+
                             </small>
 
                         </td>
@@ -133,23 +152,33 @@
                         <td>
 
                             {% if appointment.status == "Pending" %}
+
                                 <span class="badge bg-warning text-dark">
                                     Pending
                                 </span>
 
+                            {% elif appointment.status == "Confirmed" %}
+
+                                <span class="badge bg-info">
+                                    Confirmed
+                                </span>
+
                             {% elif appointment.status == "Completed" %}
+
                                 <span class="badge bg-success">
                                     Completed
                                 </span>
 
                             {% elif appointment.status == "Cancelled" %}
+
                                 <span class="badge bg-danger">
                                     Cancelled
                                 </span>
 
-                            {% else %}
+                            {% elif appointment.status == "Missed" %}
+
                                 <span class="badge bg-secondary">
-                                    {{ appointment.status }}
+                                    Missed
                                 </span>
 
                             {% endif %}
@@ -164,6 +193,15 @@
                                 <i class="fa-solid fa-eye me-1"></i>
 
                                 View
+
+                            </a>
+
+                            <a href="{% url 'appointments:update_status' appointment.pk %}"
+                               class="btn btn-sm btn-outline-success">
+
+                                <i class="fa-solid fa-pen me-1"></i>
+
+                                Update
 
                             </a>
 
@@ -187,7 +225,7 @@
 
             <h4>No Appointments Today</h4>
 
-            <p class="text-muted mb-0">
+            <p class="text-muted">
                 You don't have any appointments scheduled for today.
             </p>
 

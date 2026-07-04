@@ -7,11 +7,11 @@
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
         <li class="breadcrumb-item">
-            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'accounts:home' %}">Home</a>
         </li>
         <li class="breadcrumb-item">
             <a href="{% url 'appointments:appointment_detail' appointment.pk %}">
-                Appointment
+                Appointment Details
             </a>
         </li>
         <li class="breadcrumb-item active">
@@ -30,10 +30,12 @@
         <div class="card shadow-sm border-0">
 
             <div class="card-header bg-warning">
+
                 <h4 class="mb-0">
                     <i class="fa-solid fa-ban me-2"></i>
                     Cancel Appointment
                 </h4>
+
             </div>
 
             <div class="card-body text-center p-5">
@@ -46,13 +48,27 @@
                 </h3>
 
                 <p class="text-muted">
-                    The appointment will remain in the system but its status will
-                    change to <strong>Cancelled</strong>.
+                    The appointment will remain in the system, but its status
+                    will change to <strong>Cancelled</strong>.
                 </p>
 
                 <div class="alert alert-light border text-start my-4">
 
                     <div class="row">
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Appointment No.</strong><br>
+                            {{ appointment.appointment_number }}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Status</strong><br>
+
+                            <span class="badge bg-warning text-dark">
+                                {{ appointment.status }}
+                            </span>
+
+                        </div>
 
                         <div class="col-md-6 mb-3">
                             <strong>Patient</strong><br>
@@ -61,37 +77,24 @@
 
                         <div class="col-md-6 mb-3">
                             <strong>Doctor</strong><br>
-
-                            {% if appointment.slot %}
-                                Dr. {{ appointment.slot.doctor.user.get_full_name }}
-                            {% elif appointment.doctor %}
-                                Dr. {{ appointment.doctor.user.get_full_name }}
-                            {% endif %}
-
+                            Dr. {{ appointment.slot.doctor.user.get_full_name }}
                         </div>
 
                         <div class="col-md-6">
                             <strong>Date</strong><br>
-
-                            {% if appointment.appointment_date %}
-                                {{ appointment.appointment_date|date:"d M Y" }}
-                            {% elif appointment.date %}
-                                {{ appointment.date|date:"d M Y" }}
-                            {% elif appointment.start_time %}
-                                {{ appointment.start_time|date:"d M Y" }}
-                            {% endif %}
-
+                            {{ appointment.appointment_date|date:"d M Y" }}
                         </div>
 
                         <div class="col-md-6">
                             <strong>Time</strong><br>
+                            {{ appointment.slot.start_time|time:"h:i A" }}
+                            -
+                            {{ appointment.slot.end_time|time:"h:i A" }}
+                        </div>
 
-                            {% if appointment.slot %}
-                                {{ appointment.slot.start_time|time:"h:i A" }}
-                            {% elif appointment.start_time %}
-                                {{ appointment.start_time|time:"h:i A" }}
-                            {% endif %}
-
+                        <div class="col-12 mt-3">
+                            <strong>Reason</strong><br>
+                            {{ appointment.reason }}
                         </div>
 
                     </div>
@@ -106,13 +109,20 @@
 
                         <a href="{% url 'appointments:appointment_detail' appointment.pk %}"
                            class="btn btn-outline-secondary">
+
+                            <i class="fa-solid fa-arrow-left me-2"></i>
+
                             Keep Appointment
+
                         </a>
 
                         <button type="submit"
                                 class="btn btn-warning text-dark">
+
                             <i class="fa-solid fa-ban me-2"></i>
+
                             Confirm Cancellation
+
                         </button>
 
                     </div>

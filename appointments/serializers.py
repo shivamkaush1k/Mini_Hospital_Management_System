@@ -10,7 +10,16 @@ class DoctorSlotSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DoctorSlot
-        fields = "__all__"
+        fields = (
+            "id",
+            "doctor",
+            "doctor_name",
+            "day",
+            "start_time",
+            "end_time",
+            "is_active",
+            "is_booked",
+        )
 
     def get_doctor_name(self, obj):
         return obj.doctor.user.get_full_name().strip()
@@ -24,7 +33,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
     patient_name = serializers.SerializerMethodField()
 
     slot_id = serializers.PrimaryKeyRelatedField(
-        queryset=DoctorSlot.objects.all(),
+        queryset=DoctorSlot.objects.filter(is_active=True, ),
         source="slot",
         write_only=True,
     )
@@ -37,6 +46,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "slot",
             "slot_id",
             "appointment_number",
+            "appointment_date",
             "status",
             "reason",
             "notes",
@@ -45,6 +55,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "doctor_name",
             "patient_name",
         )
+        read_only_fields = ("appointment_number", "appointment_date")
 
     def get_doctor_name(self, obj):
         return obj.slot.doctor.user.get_full_name().strip()

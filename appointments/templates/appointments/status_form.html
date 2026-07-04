@@ -8,14 +8,19 @@
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
         <li class="breadcrumb-item">
-            <a href="{% url 'home' %}" class="text-decoration-none">Home</a>
-        </li>
-        <li class="breadcrumb-item">
-            <a href="{% url 'appointments:appointment_list' %}" class="text-decoration-none">
-                Appointments
+            <a href="{% url 'accounts:home' %}" class="text-decoration-none">
+                Home
             </a>
         </li>
-        <li class="breadcrumb-item active">
+
+        <li class="breadcrumb-item">
+            <a href="{% url 'appointments:appointment_detail' appointment.pk %}"
+               class="text-decoration-none">
+                Appointment Details
+            </a>
+        </li>
+
+        <li class="breadcrumb-item active" aria-current="page">
             Update Status
         </li>
     </ol>
@@ -26,11 +31,11 @@
 
 <div class="row justify-content-center">
 
-    <div class="col-lg-7">
+    <div class="col-lg-8">
 
         <div class="card shadow-sm border-0">
 
-            <div class="card-header bg-primary text-white py-3">
+            <div class="card-header bg-primary text-white">
                 <h4 class="mb-0">
                     <i class="fa-solid fa-clipboard-check me-2"></i>
                     Update Appointment Status
@@ -39,11 +44,45 @@
 
             <div class="card-body">
 
-                {% if appointment %}
-
+                <!-- Appointment Summary -->
                 <div class="alert alert-light border mb-4">
 
                     <div class="row">
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Appointment No.</strong><br>
+                            {{ appointment.appointment_number }}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Status</strong><br>
+
+                            {% if appointment.status == "Pending" %}
+                                <span class="badge bg-warning text-dark">
+                                    Pending
+                                </span>
+
+                            {% elif appointment.status == "Confirmed" %}
+                                <span class="badge bg-info">
+                                    Confirmed
+                                </span>
+
+                            {% elif appointment.status == "Completed" %}
+                                <span class="badge bg-success">
+                                    Completed
+                                </span>
+
+                            {% elif appointment.status == "Cancelled" %}
+                                <span class="badge bg-danger">
+                                    Cancelled
+                                </span>
+
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    {{ appointment.status }}
+                                </span>
+                            {% endif %}
+                        </div>
 
                         <div class="col-md-6 mb-3">
                             <strong>Patient</strong><br>
@@ -52,63 +91,36 @@
 
                         <div class="col-md-6 mb-3">
                             <strong>Doctor</strong><br>
-                            {% if appointment.slot %}
-                                Dr. {{ appointment.slot.doctor.user.get_full_name }}
-                            {% elif appointment.doctor %}
-                                Dr. {{ appointment.doctor.user.get_full_name }}
-                            {% endif %}
+                            Dr. {{ appointment.slot.doctor.user.get_full_name }}
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <strong>Date</strong><br>
-
-                            {% if appointment.appointment_date %}
-                                {{ appointment.appointment_date|date:"d M Y" }}
-                            {% elif appointment.date %}
-                                {{ appointment.date|date:"d M Y" }}
-                            {% endif %}
-
+                            {{ appointment.appointment_date|date:"d M Y" }}
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <strong>Current Status</strong><br>
+                            <strong>Time</strong><br>
+                            {{ appointment.appointment_time|time:"h:i A" }}
+                        </div>
 
-                            {% if appointment.status == "Completed" %}
-                                <span class="badge bg-success">
-                                    {{ appointment.status }}
-                                </span>
-
-                            {% elif appointment.status == "Pending" %}
-                                <span class="badge bg-warning text-dark">
-                                    {{ appointment.status }}
-                                </span>
-
-                            {% elif appointment.status == "Cancelled" %}
-                                <span class="badge bg-danger">
-                                    {{ appointment.status }}
-                                </span>
-
-                            {% else %}
-                                <span class="badge bg-secondary">
-                                    {{ appointment.status }}
-                                </span>
-                            {% endif %}
-
+                        <div class="col-md-12">
+                            <strong>Reason</strong><br>
+                            {{ appointment.reason|default:"Not provided" }}
                         </div>
 
                     </div>
 
                 </div>
 
-                {% endif %}
-
+                <!-- Form -->
                 <form method="post">
 
                     {% csrf_token %}
 
                     {{ form|crispy }}
 
-                    <hr class="my-4">
+                    <hr>
 
                     <div class="d-flex justify-content-between">
 

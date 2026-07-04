@@ -7,7 +7,7 @@
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
         <li class="breadcrumb-item">
-            <a href="{% url 'home' %}" class="text-decoration-none">Home</a>
+            <a href="{% url 'accounts:home' %}" class="text-decoration-none">Home</a>
         </li>
         <li class="breadcrumb-item">
             <a href="{% url 'doctors:doctor_dashboard' %}" class="text-decoration-none">
@@ -80,8 +80,6 @@
                     <td>
                         {% if prescription.created_at %}
                             {{ prescription.created_at|date:"d M Y" }}
-                        {% elif prescription.date %}
-                            {{ prescription.date|date:"d M Y" }}
                         {% else %}
                             —
                         {% endif %}
@@ -105,13 +103,21 @@
 
                     <td>
 
-                        {% if prescription.medicines %}
-                            {{ prescription.medicines|truncatechars:60 }}
-                        {% elif prescription.medications %}
-                            {{ prescription.medications|truncatechars:60 }}
-                        {% else %}
-                            —
-                        {% endif %}
+                        <!--
+                            "medicines" is a related manager (reverse FK to
+                            PrescriptionMedicine), not a text field, so it must
+                            be iterated rather than printed directly.
+                        -->
+                        {% with meds=prescription.medicines.all %}
+                            {% if meds %}
+                                {% for med in meds|slice:":3" %}
+                                    {{ med.name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                                {% if meds|length > 3 %}…{% endif %}
+                            {% else %}
+                                —
+                            {% endif %}
+                        {% endwith %}
 
                     </td>
 

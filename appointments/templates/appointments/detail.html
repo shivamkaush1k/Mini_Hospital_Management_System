@@ -1,120 +1,178 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Appointment Details{% endblock %}
 
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'accounts:home' %}" class="text-decoration-none">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'appointments:my_appointments' %}" class="text-decoration-none">
+                My Appointments
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            Appointment Details
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 
-<div class="card shadow">
+<div class="card shadow-sm border-0">
 
-<div class="card-header bg-success text-white">
+    <div class="card-header bg-success text-white">
+        <h3 class="mb-0">
+            <i class="fa-solid fa-calendar-check me-2"></i>
+            Appointment Details
+        </h3>
+    </div>
 
-<h3>Appointment Details</h3>
+    <div class="card-body">
 
-</div>
+        <table class="table table-bordered align-middle">
 
-<div class="card-body">
+            <tr>
+                <th width="220">Appointment No.</th>
+                <td>{{ appointment.appointment_number }}</td>
+            </tr>
 
-<table class="table">
+            <tr>
+                <th>Doctor</th>
+                <td>
+                    Dr. {{ appointment.slot.doctor.user.get_full_name }}
+                </td>
+            </tr>
 
-<tr>
+            <tr>
+                <th>Patient</th>
+                <td>
+                    {{ appointment.patient.user.get_full_name }}
+                </td>
+            </tr>
 
-<th>Doctor</th>
+            <tr>
+                <th>Specialization</th>
+                <td>
+                    {{ appointment.slot.doctor.specialization }}
+                </td>
+            </tr>
 
-<td>{{ appointment.doctor }}</td>
+            <tr>
+                <th>Date</th>
+                <td>
+                    {{ appointment.appointment_date|date:"d M Y" }}
+                </td>
+            </tr>
 
-</tr>
+            <tr>
+                <th>Time</th>
+                <td>
+                    {{ appointment.slot.start_time|time:"h:i A" }}
+                    -
+                    {{ appointment.slot.end_time|time:"h:i A" }}
+                </td>
+            </tr>
 
-<tr>
+            <tr>
+                <th>Reason</th>
+                <td>
+                    {{ appointment.reason }}
+                </td>
+            </tr>
 
-<th>Patient</th>
+            <tr>
+                <th>Status</th>
+                <td>
 
-<td>{{ appointment.patient }}</td>
+                    {% if appointment.status == "Pending" %}
+                        <span class="badge bg-warning text-dark">
+                            Pending
+                        </span>
 
-</tr>
+                    {% elif appointment.status == "Confirmed" %}
+                        <span class="badge bg-info">
+                            Confirmed
+                        </span>
 
-<tr>
+                    {% elif appointment.status == "Completed" %}
+                        <span class="badge bg-success">
+                            Completed
+                        </span>
 
-<th>Date</th>
+                    {% elif appointment.status == "Cancelled" %}
+                        <span class="badge bg-danger">
+                            Cancelled
+                        </span>
 
-<td>{{ appointment.date }}</td>
+                    {% else %}
+                        <span class="badge bg-secondary">
+                            {{ appointment.status }}
+                        </span>
+                    {% endif %}
 
-</tr>
+                </td>
+            </tr>
 
-<tr>
+            {% if appointment.notes %}
+            <tr>
+                <th>Doctor Notes</th>
+                <td>{{ appointment.notes }}</td>
+            </tr>
+            {% endif %}
 
-<th>Time Slot</th>
+            <tr>
+                <th>Booked On</th>
+                <td>{{ appointment.created_at|date:"d M Y h:i A" }}</td>
+            </tr>
 
-<td>{{ appointment.slot }}</td>
+        </table>
 
-</tr>
+        <div class="mt-4 d-flex gap-2 flex-wrap">
 
-<tr>
+            <a href="{% url 'appointments:my_appointments' %}"
+               class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left me-2"></i>
+                Back
+            </a>
 
-<th>Status</th>
+            {% if appointment.status != "Cancelled" and appointment.status != "Completed" %}
 
-<td>
+                <a href="{% url 'appointments:cancel_appointment' appointment.pk %}"
+                   class="btn btn-danger">
+                    <i class="fa-solid fa-ban me-2"></i>
+                    Cancel Appointment
+                </a>
 
-{{ appointment.status }}
+            {% endif %}
 
-</td>
+            {% if request.user.profile.role == "DOCTOR" or request.user.is_staff %}
 
-</tr>
+                <a href="{% url 'appointments:update_status' appointment.pk %}"
+                   class="btn btn-warning">
+                    <i class="fa-solid fa-pen me-2"></i>
+                    Update Status
+                </a>
 
-<tr>
+            {% endif %}
 
-<th>Reason</th>
+            {% if request.user.is_staff %}
 
-<td>
+                <a href="{% url 'appointments:delete_appointment' appointment.pk %}"
+                   class="btn btn-outline-danger">
+                    <i class="fa-solid fa-trash me-2"></i>
+                    Delete
+                </a>
 
-{{ appointment.reason }}
+            {% endif %}
 
-</td>
+        </div>
 
-</tr>
-
-<tr>
-
-<th>Created At</th>
-
-<td>
-
-{{ appointment.created_at }}
-
-</td>
-
-</tr>
-
-</table>
-
-<div class="mt-4">
-
-<a href="{% url 'appointments:list' %}"
-
-class="btn btn-secondary">
-
-Back
-
-</a>
-
-<a href="{% url 'appointments:update' appointment.id %}"
-
-class="btn btn-warning">
-
-Edit
-
-</a>
-
-<a href="{% url 'appointments:delete' appointment.id %}"
-
-class="btn btn-danger">
-
-Cancel Appointment
-
-</a>
-
-</div>
-
-</div>
+    </div>
 
 </div>
 

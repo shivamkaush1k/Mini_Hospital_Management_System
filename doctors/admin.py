@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import Doctor, DoctorSlot
 
 
@@ -13,10 +14,12 @@ class DoctorAdmin(admin.ModelAdmin):
         "rating",
         "is_active",
     )
+
     list_filter = (
         "specialization",
         "is_active",
     )
+
     search_fields = (
         "user__username",
         "user__first_name",
@@ -26,6 +29,7 @@ class DoctorAdmin(admin.ModelAdmin):
         "license_number",
         "room_number",
     )
+
     ordering = (
         "specialization",
         "user__first_name",
@@ -36,18 +40,30 @@ class DoctorAdmin(admin.ModelAdmin):
 class DoctorSlotAdmin(admin.ModelAdmin):
     list_display = (
         "doctor",
-        "day",
+        "date",
         "start_time",
         "end_time",
         "max_patients",
         "is_active",
+        "is_booked",
     )
+
     list_filter = (
-        "day",
+        "date",
         "is_active",
+        "is_booked",
     )
+
     search_fields = (
+        "doctor__user__username",
         "doctor__user__first_name",
         "doctor__user__last_name",
         "doctor__specialization",
     )
+
+    ordering = (
+        "date",
+        "start_time",
+    )
+
+    date_hierarchy = "date"
