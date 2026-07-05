@@ -6,12 +6,12 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2>Manage Appointment Slots</h2>
-        <p class="text-muted mb-0">Create, edit and manage your consultation slots.</p>
+        <p class="text-muted mb-0">Create, edit and manage your consultation sessions.</p>
     </div>
 
     <a href="{% url 'doctors:slot_create' %}" class="btn btn-primary">
         <i class="fa-solid fa-calendar-plus me-2"></i>
-        Add New Slot
+        Add New Session
     </a>
 </div>
 
@@ -23,8 +23,12 @@
                 <thead class="table-light">
                     <tr>
                         <th>Date</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
+                        <th>Working Hours</th>
+                        <th>Consultation</th>
+                        <th>Buffer</th>
+                        <th>Total</th>
+                        <th>Booked</th>
+                        <th>Available</th>
                         <th>Status</th>
                         <th>Active</th>
                         <th class="text-center">Actions</th>
@@ -34,19 +38,42 @@
                 {% for slot in slots %}
                 <tr>
                     <td>{{ slot.date }}</td>
-                    <td>{{ slot.start_time }}</td>
-                    <td>{{ slot.end_time }}</td>
+
+                    <td>
+                        {{ slot.start_time }} -
+                        {{ slot.end_time }}
+                    </td>
+
+                    <td>{{ slot.consultation_duration }} min</td>
+
+                    <td>{{ slot.buffer_duration }} min</td>
+
+                    <td>{{ slot.total_slots }}</td>
+
+                    <td>
+                        <span class="badge bg-danger">
+                            {{ slot.booked_slots }}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="badge bg-success">
+                            {{ slot.available_slots }}
+                        </span>
+                    </td>
+
                     <td>
                         {% if slot.current_status == "Available" %}
-                        <span class="badge bg-success">{{ slot.current_status }}</span>
-                        {% elif slot.current_status == "Booked" %}
-                        <span class="badge bg-warning text-dark">{{ slot.current_status }}</span>
-                        {% elif slot.current_status == "Inactive" %}
-                        <span class="badge bg-secondary">{{ slot.current_status }}</span>
+                            <span class="badge bg-success">Available</span>
+                        {% elif slot.current_status == "Full" %}
+                            <span class="badge bg-warning text-dark">Full</span>
+                        {% elif slot.current_status == "Expired" %}
+                            <span class="badge bg-danger">Expired</span>
                         {% else %}
-                        <span class="badge bg-danger">{{ slot.current_status }}</span>
+                            <span class="badge bg-secondary">Inactive</span>
                         {% endif %}
                     </td>
+
                     <td>
                         {% if slot.is_active %}
                             <span class="badge bg-primary">Active</span>
@@ -54,16 +81,19 @@
                             <span class="badge bg-secondary">Inactive</span>
                         {% endif %}
                     </td>
+
                     <td class="text-center">
                         <a href="{% url 'doctors:slot_update' slot.id %}" class="btn btn-sm btn-warning">
                             <i class="fa-solid fa-pen"></i>
                         </a>
+
                         <form method="post" action="{% url 'doctors:slot_delete' slot.id %}" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this slot?')">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this session?')">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </form>
+
                         {% if slot.is_active %}
                         <a href="{% url 'doctors:slot_toggle' slot.id %}" class="btn btn-sm btn-secondary">
                             Disable
@@ -82,10 +112,10 @@
         {% else %}
         <div class="text-center py-5">
             <i class="fa-solid fa-calendar-xmark fa-4x text-muted mb-3"></i>
-            <h4>No Slots Available</h4>
-            <p class="text-muted">You haven't created any appointment slots yet.</p>
+            <h4>No Sessions Available</h4>
+            <p class="text-muted">You haven't created any working sessions yet.</p>
             <a href="{% url 'doctors:slot_create' %}" class="btn btn-primary">
-                Create Your First Slot
+                Create Your First Session
             </a>
         </div>
         {% endif %}

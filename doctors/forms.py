@@ -120,7 +120,6 @@ class DoctorForm(forms.ModelForm):
 
         return rating
 
-
 class DoctorSlotForm(forms.ModelForm):
 
     def __init__(self, *args, doctor=None, **kwargs):
@@ -134,11 +133,13 @@ class DoctorSlotForm(forms.ModelForm):
             "date",
             "start_time",
             "end_time",
-            "max_patients",
+            "consultation_duration",
+            "buffer_duration",
             "is_active",
         )
 
         widgets = {
+
             "date": forms.DateInput(
                 attrs={
                     "type": "date",
@@ -160,10 +161,17 @@ class DoctorSlotForm(forms.ModelForm):
                 }
             ),
 
-            "max_patients": forms.NumberInput(
+            "consultation_duration": forms.NumberInput(
                 attrs={
                     "class": "form-control",
                     "min": 1,
+                }
+            ),
+
+            "buffer_duration": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": 0,
                 }
             ),
 
@@ -175,11 +183,15 @@ class DoctorSlotForm(forms.ModelForm):
         }
 
     def clean(self):
+
         cleaned_data = super().clean()
 
         date = cleaned_data.get("date")
         start = cleaned_data.get("start_time")
         end = cleaned_data.get("end_time")
+
+        consultation = cleaned_data.get("consultation_duration")
+        buffer = cleaned_data.get("buffer_duration")
 
         if date and date < timezone.localdate():
             raise ValidationError(
@@ -189,6 +201,16 @@ class DoctorSlotForm(forms.ModelForm):
         if start and end and start >= end:
             raise ValidationError(
                 "End time must be after start time."
+            )
+
+        if consultation is not None and consultation <= 0:
+            raise ValidationError(
+                "Consultation duration must be greater than zero."
+            )
+
+        if buffer is not None and buffer < 0:
+            raise ValidationError(
+                "Buffer duration cannot be negative."
             )
 
         doctor = self.doctor
@@ -207,12 +229,11 @@ class DoctorSlotForm(forms.ModelForm):
 
             if qs.exists():
                 raise ValidationError(
-                    "This slot overlaps with an existing slot."
+                    "This working session overlaps with another session."
                 )
 
         return cleaned_data
-
-
+    
 class DoctorSearchForm(forms.Form):
 
     specialization = forms.ChoiceField(

@@ -50,36 +50,59 @@
                 </table>
 
                 <h5 class="mt-4">Available Slots</h5>
-
                 <table class="table table-bordered">
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Time</th>
+                            <th>Working Hours</th>
+                            <th>Consultation</th>
+                            <th>Buffer</th>
+                            <th>Booked</th>
+                            <th>Available</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for slot in slots %}
-                            <tr>
-                                <td>{{ slot.date }}</td>
-                                <td>{{ slot.start_time }} - {{ slot.end_time }}</td>
-                                <td>
-                                    {% if slot.current_status == "Available" %}
-                                        <span class="badge bg-success">Available</span>
-                                    {% elif slot.current_status == "Booked" %}
-                                        <span class="badge bg-warning text-dark">Booked</span>
-                                    {% elif slot.current_status == "Inactive" %}
-                                        <span class="badge bg-secondary">Inactive</span>
-                                    {% else %}
-                                        <span class="badge bg-danger">Not Available</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
+                        <tr>
+                            <td>{{ slot.date }}</td>
+                            <td>
+                                {{ slot.start_time }}-{{ slot.end_time }}
+                            </td>
+                            <td>{{ slot.consultation_duration }} 
+                                min
+                            </td>
+                            <td>
+                                {{ slot.buffer_duration }} min
+                            </td>
+                            <td>
+                                {{ slot.booked_slots }}
+                            </td>
+                            <td>
+                                {{ slot.available_slots }}
+                            </td>
+                            <td>
+                                {% if slot.current_status == "Available" %}
+                                <span class="badge bg-success">
+                                    Available
+                                </span>
+                                {% elif slot.current_status == "Inactive" %}
+                                <span class="badge bg-secondary">
+                                    Inactive
+                                </span>
+                                {% else %}
+                                <span class="badge bg-danger">
+                                    Not Available
+                                </span>
+                                {% endif %}
+                            </td>
+                        </tr>
                         {% empty %}
-                            <tr>
-                                <td colspan="3" class="text-center">No slots available.</td>
-                            </tr>
+                        <tr>
+                            <td colspan="7" class="text-center">
+                                No sessions available.
+                            </td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>

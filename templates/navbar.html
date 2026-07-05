@@ -24,10 +24,10 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link px-3" href="accounts:about">About</a>
+          <a class="nav-link px-3" href="{% url 'accounts:about' %}">About</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link px-3" href="accounts:contacts">Contact</a>
+          <a class="nav-link px-3" href="{% url 'accounts:contacts' %}">Contact</a>
         </li>
         {% if user.is_authenticated %}
         {% if user.profile.role == "DOCTOR" %}

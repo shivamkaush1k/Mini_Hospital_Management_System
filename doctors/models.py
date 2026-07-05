@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from django.utils import timezone
 import uuid
 
@@ -91,6 +92,7 @@ class Doctor(models.Model):
         return f"Dr. {self.user.get_full_name()}"
 
 
+
 class DoctorSlot(models.Model):
 
     id = models.UUIDField(
@@ -111,16 +113,20 @@ class DoctorSlot(models.Model):
 
     end_time = models.TimeField()
 
-    max_patients = models.PositiveIntegerField(
-        default=1
+    # Duration of one consultation (minutes)
+    consultation_duration = models.PositiveIntegerField(
+        default=10,
+        help_text="Consultation duration in minutes."
+    )
+
+    # Gap after each consultation (minutes)
+    buffer_duration = models.PositiveIntegerField(
+        default=5,
+        help_text="Buffer time between appointments."
     )
 
     is_active = models.BooleanField(
         default=True
-    )
-
-    is_booked = models.BooleanField(
-        default=False
     )
 
     created_at = models.DateTimeField(
@@ -150,35 +156,171 @@ class DoctorSlot(models.Model):
         ]
 
     def clean(self):
+
         if self.start_time >= self.end_time:
             raise ValidationError(
                 "End time must be later than start time."
             )
 
+        if self.consultation_duration <= 0:
+            raise ValidationError(
+                "Consultation duration must be greater than zero."
+            )
+
+        if self.buffer_duration < 0:
+            raise ValidationError(
+                "Buffer duration cannot be negative."
+            )
+
     def __str__(self):
+
         return (
             f"Dr. {self.doctor.user.get_full_name()} | "
             f"{self.date} | "
-            f"{self.start_time.strftime('%H:%M')} - "
-            f"{self.end_time.strftime('%H:%M')}"
+            f"{self.start_time.strftime('%I:%M %p')} - "
+            f"{self.end_time.strftime('%I:%M %p')}"
         )
+
+    @property
+    def slot_interval(self):
+        """
+        Total minutes occupied by one patient.
+        """
+        return self.consultation_duration + self.buffer_duration
+
+    def generated_times(self):
+        """
+        Generate every appointment start time.
+        Example:
+        09:00
+        09:15
+        09:30
+        ...
+        """
+
+        start = datetime.combine(
+            self.date,
+            self.start_time,
+        )
+
+        end = datetime.combine(
+            self.date,
+            self.end_time,
+        )
+
+        current = start
+
+        times = []
+
+        while True:
+
+            consultation_end = (
+                current +
+                timedelta(
+                    minutes=self.consultation_duration
+                )
+            )
+
+            if consultation_end > end:
+                break
+
+            times.append(current.time())
+
+            current = (
+                consultation_end +
+                timedelta(
+                    minutes=self.buffer_duration
+                )
+            )
+
+        return times
+
+    def booked_times(self):
+        """
+        Return all booked appointment times.
+        """
+
+        from appointments.models import Appointment
+
+        return set(
+
+            Appointment.objects.filter(
+                slot=self,
+                status__in=[
+                    Appointment.Status.PENDING,
+                    Appointment.Status.CONFIRMED,
+                ],
+            ).values_list(
+                "appointment_time",
+                flat=True,
+            )
+
+        )
+
+    def available_times(self):
+        """
+        Return only available appointment times.
+        """
+
+        booked = self.booked_times()
+
+        return [
+
+            time
+
+            for time in self.generated_times()
+
+            if time not in booked
+
+        ]
+
+    @property
+    def total_slots(self):
+        """
+        Total appointment slots generated.
+        """
+
+        return len(self.generated_times())
+
+    @property
+    def booked_slots(self):
+        """
+        Number of booked appointments.
+        """
+
+        return len(self.booked_times())
+
+    @property
+    def available_slots(self):
+        """
+        Number of remaining appointments.
+        """
+
+        return len(self.available_times())
+
+    @property
+    def is_full(self):
+        """
+        True when no appointment times remain.
+        """
+
+        return self.available_slots == 0
+
     @property
     def current_status(self):
+
         now = timezone.localtime()
 
         if not self.is_active:
-           return "Inactive"
-
-        if self.is_booked:
-           return "Booked"
+            return "Inactive"
 
         if self.date < now.date():
-           return "Not Available"
+            return "Expired"
 
-        if self.date > now.date():
-           return "Available"
+        if self.date == now.date() and now.time() > self.end_time:
+            return "Expired"
 
-        if now.time() > self.end_time:
-           return "Not Available"
+        if self.is_full:
+            return "Full"
 
         return "Available"

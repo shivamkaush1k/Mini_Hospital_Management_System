@@ -73,7 +73,8 @@ def doctor_detail(request, pk):
         ),
         pk=pk,
     )
-    slots = (doctor.slots.filter(is_active=True, date__gte=timezone.localdate()).order_by("date", "start_time"))
+    slots = (doctor.slots.filter(is_active=True,date__gte=timezone.localdate(),).prefetch_related("appointments").order_by("date", "start_time"))
+
     appointments = Appointment.objects.filter(slot__doctor=doctor)
     return render(request,"doctors/doctor_detail.html",{"doctor": doctor,"slots": slots,"appointments": appointments,})
 @login_required
@@ -161,7 +162,7 @@ def doctor_dashboard(request):
     appointments = (
         Appointment.objects
         .filter(slot__doctor=doctor)
-        .select_related("patient__user", "slot")
+        .select_related("patient__user","slot","slot__doctor",)
         .order_by("-appointment_date", "-appointment_time")
     )
 
@@ -180,12 +181,9 @@ def doctor_dashboard(request):
                 Appointment.Status.CONFIRMED,
             ],
         ).count(),
-
-        "available_slots": doctor.slots.filter(
-            is_active=True,
-            is_booked=False,
-            date__gte=today,
-        ).count(),
+        "available_slots": sum(
+            slot.available_slots
+            for slot in doctor.slots.prefetch_related("appointments").filter(is_active=True,date__gte=today,)),
 
         "total_patients": appointments.values(
             "patient"
@@ -226,8 +224,8 @@ def doctor_dashboard(request):
 def slot_list(request):
 
     doctor = request.user.doctor
+    slots = (doctor.slots.prefetch_related("appointments").order_by("date", "start_time"))
 
-    slots = doctor.slots.all()
 
     return render(
         request,
@@ -238,17 +236,30 @@ def slot_list(request):
 
 @login_required
 def slot_create(request):
-    form = DoctorSlotForm(request.POST or None,doctor=request.user.doctor,)
+    form = DoctorSlotForm(
+        request.POST or None,
+        doctor=request.user.doctor,
+    )
 
     if form.is_valid():
         slot = form.save(commit=False)
         slot.doctor = request.user.doctor
         slot.save()
-        messages.success(request, "Slot created successfully.")
+
+        messages.success(
+            request,
+            "Working session created successfully."
+        )
+
         return redirect("doctors:slot_list")
 
-    return render(request, "doctors/slot_form.html", {"form": form})
-
+    return render(
+        request,
+        "doctors/slot_form.html",
+        {
+            "form": form,
+        },
+    )
 
 @login_required
 def slot_update(request, pk):
@@ -265,7 +276,7 @@ def slot_update(request, pk):
 
         form.save()
 
-        messages.success(request, "Slot updated.")
+        messages.success(request,"Working session updated successfully.")
 
         # FIX: was redirect("slot_list") — un-namespaced.
         return redirect("doctors:slot_list")
@@ -331,24 +342,27 @@ def slot_toggle(request, pk):
         doctor=request.user.doctor,
     )
 
-    # Don't allow disabling a booked slot
-    if slot.is_booked:
+    if slot.appointments.exists():
         messages.warning(
             request,
-            "Booked slots cannot be disabled."
+            "This working session already has appointments."
         )
-        return redirect("doctors:slot_list")
 
     slot.is_active = not slot.is_active
-    slot.save()
+    slot.save(update_fields=["is_active"])
 
     if slot.is_active:
-        messages.success(request, "Slot enabled successfully.")
+        messages.success(
+            request,
+            "Working session enabled."
+        )
     else:
-        messages.success(request, "Slot disabled successfully.")
+        messages.success(
+            request,
+            "Working session disabled."
+        )
 
     return redirect("doctors:slot_list")
-
 
 @login_required
 def doctor_patients_for_prescriptions(request):

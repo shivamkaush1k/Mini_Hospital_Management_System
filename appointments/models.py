@@ -71,18 +71,24 @@ class Appointment(models.Model):
         ordering = ["-appointment_date", "-created_at"]
 
         constraints = [
+            # IMPORTANT: `slot` is now a whole working session (e.g. 9am-1pm),
+            # not a single appointment. Many different appointment_times can
+            # be booked against the same slot on the same day, so the
+            # uniqueness must include appointment_time — otherwise only one
+            # patient could ever book a given session per day.
             models.UniqueConstraint(
                 fields=[
                     "slot",
                     "appointment_date",
+                    "appointment_time",
                 ],
-                name="unique_slot_per_day"
+                name="unique_slot_time_per_day"
             )
         ]
 
     def clean(self):
         super().clean()
-        
+
         if not self.slot_id or not self.appointment_date:
             return
         if self.slot.date != self.appointment_date:

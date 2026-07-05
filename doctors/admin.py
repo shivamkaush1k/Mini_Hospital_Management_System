@@ -38,20 +38,26 @@ class DoctorAdmin(admin.ModelAdmin):
 
 @admin.register(DoctorSlot)
 class DoctorSlotAdmin(admin.ModelAdmin):
+    # Only real model fields and real properties/methods on DoctorSlot.
+    # No max_patients, is_booked, capacity, buffer_time, or booked_count —
+    # those fields don't exist anymore.
     list_display = (
         "doctor",
         "date",
         "start_time",
         "end_time",
-        "max_patients",
+        "consultation_duration",
+        "buffer_duration",
+        "total_slots",
+        "booked_slots",
+        "available_slots",
+        "current_status",
         "is_active",
-        "is_booked",
     )
 
     list_filter = (
         "date",
         "is_active",
-        "is_booked",
     )
 
     search_fields = (

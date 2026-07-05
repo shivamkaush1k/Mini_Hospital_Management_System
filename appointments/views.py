@@ -58,27 +58,11 @@ def _can_cancel_appointment(user, appointment):
     return False
 
 
-def _slot_has_capacity(slot, appointment_date):
-    booked_count = slot.appointments.filter(
-        appointment_date=appointment_date,
-        status__in=[
-            Appointment.Status.PENDING,
-            Appointment.Status.CONFIRMED,
-        ],
-    ).count()
-    return booked_count < slot.max_patients
-
-
-def _appointment_time_taken(slot, appointment_date, appointment_time):
-    return Appointment.objects.filter(
-        slot=slot,
-        appointment_date=appointment_date,
-        appointment_time=appointment_time,
-        status__in=[
-            Appointment.Status.PENDING,
-            Appointment.Status.CONFIRMED,
-        ],
-    ).exists()
+# NOTE: capacity and double-booking checks now live entirely on
+# DoctorSlot.available_times() / is_full (see doctors/models.py), which is
+# the single source of truth for what's bookable. There's no more
+# _slot_has_capacity() or _appointment_time_taken() helper here — they
+# referenced fields (max_patients) that no longer exist on DoctorSlot.
 
 
 # ==========================================================
@@ -159,6 +143,10 @@ def book_appointment_form(request, doctor_id):
 
         if form.is_valid():
 
+            # select_for_update locks this working session's row for the
+            # duration of the transaction, so two patients racing for the
+            # same appointment_time can't both succeed — the second one
+            # re-checks available_times() after the lock is acquired.
             slot = get_object_or_404(
                 DoctorSlot.objects.select_for_update().select_related(
                     "doctor__user"
@@ -171,17 +159,13 @@ def book_appointment_form(request, doctor_id):
             appointment_date = slot.date
             appointment_time = form.cleaned_data["appointment_time"]
 
-            # Check whether the slot is currently available
             if slot.current_status != "Available":
                 form.add_error(
                     "slot",
-                    f"This slot is {slot.current_status.lower()}."
+                    f"This session is {slot.current_status.lower()}."
                 )
 
-            # Check appointment time falls within slot
-            elif not (
-                slot.start_time <= appointment_time < slot.end_time
-            ):
+            elif not (slot.start_time <= appointment_time < slot.end_time):
                 form.add_error(
                     "appointment_time",
                     (
@@ -191,22 +175,10 @@ def book_appointment_form(request, doctor_id):
                     ),
                 )
 
-            # Check slot capacity
-            elif not _slot_has_capacity(slot, appointment_date):
-                form.add_error(
-                    "slot",
-                    "This slot is already full.",
-                )
-
-            # Check duplicate appointment time
-            elif _appointment_time_taken(
-                slot,
-                appointment_date,
-                appointment_time,
-            ):
+            elif appointment_time not in slot.available_times():
                 form.add_error(
                     "appointment_time",
-                    "This appointment time has already been booked.",
+                    "That time is no longer available. Please choose another.",
                 )
 
             else:
@@ -436,9 +408,9 @@ def today_appointments(request):
 # ==========================================================
 # AJAX: DOCTOR SLOTS BY DATE
 # ==========================================================
-
 @login_required
 def doctor_slots_ajax(request, doctor_id):
+
     doctor = get_object_or_404(Doctor, pk=doctor_id)
 
     selected_date = parse_date(request.GET.get("date"))
@@ -456,20 +428,33 @@ def doctor_slots_ajax(request, doctor_id):
 
     for slot in slots:
 
-        # Skip expired, booked or inactive slots
+        # Skip expired, full, or inactive sessions
         if slot.current_status != "Available":
             continue
 
-        available = _slot_has_capacity(slot, slot.date)
+        # Reuse the model's own time-generation logic instead of
+        # duplicating the consultation/buffer math here.
+        times = [
+            {
+                "value": t.strftime("%H:%M"),
+                "label": t.strftime("%I:%M %p"),
+            }
+            for t in slot.available_times()
+        ]
 
-        data["slots"].append({
-            "id": str(slot.id),
-            "date": slot.date.strftime("%Y-%m-%d"),
-            "start_time": slot.start_time.strftime("%I:%M %p"),
-            "end_time": slot.end_time.strftime("%I:%M %p"),
-            "status": slot.current_status,
-            "is_available": available,
-            "max_patients": slot.max_patients,
-        })
+        data["slots"].append(
+            {
+                "id": str(slot.id),
+                "date": slot.date.strftime("%Y-%m-%d"),
+                "start_time": slot.start_time.strftime("%I:%M %p"),
+                "end_time": slot.end_time.strftime("%I:%M %p"),
+                "times": times,
+            }
+        )
 
     return JsonResponse(data)
+
+
+# ==========================================================
+# PRESCRIPTION-RELATED VIEWS UNCHANGED — see doctors/views.py
+# ==========================================================

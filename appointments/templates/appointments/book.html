@@ -217,23 +217,18 @@
 
 <script>
 
-function selectSlot(id, btn) {
+function selectAppointment(slotId, appointmentTime, button) {
 
-    document.querySelectorAll(".slot-btn").forEach(function (b) {
-        b.classList.remove("btn-primary");
-        b.classList.add("btn-outline-primary");
+    document.querySelectorAll(".slot-btn").forEach(function(btn) {
+        btn.classList.remove("btn-primary");
+        btn.classList.add("btn-outline-primary");
     });
 
-    btn.classList.remove("btn-outline-primary");
-    btn.classList.add("btn-primary");
+    button.classList.remove("btn-outline-primary");
+    button.classList.add("btn-primary");
 
-    const input = document.getElementById("id_slot");
-
-    if (input) {
-        input.value = id;
-    } else {
-        console.error("Hidden input 'id_slot' not found.");
-    }
+    document.getElementById("id_slot").value = slotId;
+    document.getElementById("id_appointment_time").value = appointmentTime;
 
 }
 
@@ -243,7 +238,7 @@ function loadSlots(date) {
 
     fetch("{% url 'appointments:doctor_slots_ajax' doctor.pk %}?date=" + date)
 
-        .then(r => r.json())
+        .then(response => response.json())
 
         .then(data => {
 
@@ -251,43 +246,75 @@ function loadSlots(date) {
 
             if (data.slots.length === 0) {
 
-                html = "<div class='alert alert-warning'>No slots available.</div>";
+                html = `
+                    <div class="alert alert-warning">
+                        No appointment times available for this date.
+                    </div>
+                `;
 
             } else {
 
-                html = "<div class='d-flex flex-wrap gap-2'>";
+                data.slots.forEach(function(slot) {
 
-                data.slots.forEach(function (slot) {
+                    html += `
+                        <div class="card mb-3 shadow-sm">
 
-                    if (slot.is_available) {
+                            <div class="card-header bg-light">
+                                <strong>
+                                    ${slot.start_time} - ${slot.end_time}
+                                </strong>
+                            </div>
+
+                            <div class="card-body">
+
+                                <div class="d-flex flex-wrap gap-2">
+                    `;
+
+                    slot.times.forEach(function(time) {
 
                         html += `
-                            <button type="button"
-                                    class="btn btn-outline-primary slot-btn"
-                                    onclick="selectSlot('${slot.id}', this)">
-                                ${slot.start_time}
+                            <button
+                                type="button"
+                                class="btn btn-outline-primary slot-btn"
+
+                                onclick="selectAppointment(
+                                    '${slot.id}',
+                                    '${time.value}',
+                                    this
+                                )">
+
+                                ${time.label}
+
                             </button>
                         `;
 
-                    } else {
+                    });
 
-                        html += `
-                            <button type="button"
-                                    class="btn btn-outline-secondary"
-                                    disabled>
-                                ${slot.start_time}
-                            </button>
-                        `;
+                    html += `
+                                </div>
 
-                    }
+                            </div>
+
+                        </div>
+                    `;
 
                 });
-
-                html += "</div>";
 
             }
 
             document.getElementById("slotsContainer").innerHTML = html;
+
+        })
+
+        .catch(function(error) {
+
+            console.error(error);
+
+            document.getElementById("slotsContainer").innerHTML = `
+                <div class="alert alert-danger">
+                    Unable to load available appointment times.
+                </div>
+            `;
 
         });
 
