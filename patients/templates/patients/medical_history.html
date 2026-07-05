@@ -9,7 +9,7 @@
   <a class="sidebar-link" href="{% url 'patients:dashboard' %}"><i class="fa fa-gauge"></i> Dashboard</a>
   <a class="sidebar-link" href="{% url 'doctors:doctor_list' %}"><i class="fa fa-user-doctor"></i> Find Doctors</a>
   <a class="sidebar-link" href="{% url 'appointments:my_appointments' %}"><i class="fa fa-calendar"></i> Appointments</a>
-  <a class="sidebar-link" href="{% url 'prescriptions:my_prescriptions' %}"><i class="fa fa-file-prescription"></i> Prescriptions</a>
+  <a class="sidebar-link" href="{% url 'prescriptions:prescription_list' %}"><i class="fa fa-file-prescription"></i> Prescriptions</a>
   <a class="sidebar-link active" href="{% url 'patients:medical_history' %}"><i class="fa fa-clock-rotate-left"></i> Medical History</a>
   <div class="sidebar-section-label mt-2">Account</div>
   <a class="sidebar-link" href="{% url 'accounts:profile' %}"><i class="fa fa-circle-user"></i> My Profile</a>
@@ -37,7 +37,6 @@
   </button>
 </div>
 
-<!-- Summary cards -->
 <div class="row g-3 mb-4">
   <div class="col-6 col-md-3">
     <div class="stat-card">
@@ -66,7 +65,6 @@
 </div>
 
 {% if history_items %}
-<!-- Timeline -->
 <div class="row g-4">
   <div class="col-12 col-lg-8">
     <div class="card">
@@ -99,15 +97,15 @@
 
                   {% if item.type == 'appointment' %}
                   <div class="fw-semibold" style="font-size:14px;">
-                    Consultation with Dr. {{ item.object.doctor.user.get_full_name }}
+                    Consultation with Dr. {{ item.object.slot.doctor.user.get_full_name }}
                   </div>
                   <div style="font-size:13px;color:var(--muted);">
-                    {{ item.object.doctor.specialization }}
+                    {{ item.object.slot.doctor.specialization }}
                     {% if item.object.reason %}· {{ item.object.reason|truncatechars:60 }}{% endif %}
                   </div>
                   <div class="mt-2 d-flex gap-2">
-                    <span class="badge {% if item.object.status == 'completed' %}bg-success-subtle text-success{% elif item.object.status == 'cancelled' %}bg-danger-subtle text-danger{% else %}bg-warning-subtle text-warning{% endif %}" style="border-radius:6px;">
-                      {{ item.object.status|capfirst }}
+                    <span class="badge {% if item.object.status == 'COMPLETED' %}bg-success-subtle text-success{% elif item.object.status == 'CANCELLED' %}bg-danger-subtle text-danger{% else %}bg-warning-subtle text-warning{% endif %}" style="border-radius:6px;">
+                      {{ item.object.get_status_display|default:item.object.status }}
                     </span>
                   </div>
 
@@ -118,7 +116,7 @@
                   <div style="font-size:13px;color:var(--muted);">
                     Diagnosis: {{ item.object.diagnosis|truncatechars:70 }}
                   </div>
-                  <a href="{% url 'prescription_detail' item.object.pk %}" class="btn btn-sm btn-outline-primary mt-2" style="font-size:12px;">
+                  <a href="{% url 'prescriptions:prescription_detail' item.object.pk %}" class="btn btn-sm btn-outline-primary mt-2" style="font-size:12px;">
                     View Prescription
                   </a>
                   {% endif %}
@@ -133,37 +131,33 @@
     </div>
   </div>
 
-  <!-- Sidebar summary -->
   <div class="col-12 col-lg-4">
-    <!-- Active Conditions -->
     <div class="card mb-4">
       <div class="card-header py-3 px-4">
         <h6 class="mb-0"><i class="fa fa-notes-medical me-2 text-primary"></i>Known Conditions</h6>
       </div>
       <div class="card-body p-3">
-        {% if request.user.patient_profile.medical_conditions %}
-        <p style="font-size:13.5px;margin:0;">{{ request.user.patient_profile.medical_conditions }}</p>
+        {% if request.user.patient.medical_conditions %}
+        <p style="font-size:13.5px;margin:0;">{{ request.user.patient.medical_conditions }}</p>
         {% else %}
-        <p style="font-size:13.5px;color:var(--muted);margin:0;">No conditions recorded. <a href="{% url 'patient_profile' %}">Update profile</a></p>
+        <p style="font-size:13.5px;color:var(--muted);margin:0;">No conditions recorded. <a href="{% url 'accounts:profile' %}">Update profile</a></p>
         {% endif %}
       </div>
     </div>
 
-    <!-- Allergies -->
     <div class="card mb-4">
       <div class="card-header py-3 px-4">
         <h6 class="mb-0"><i class="fa fa-triangle-exclamation me-2 text-warning"></i>Allergies</h6>
       </div>
       <div class="card-body p-3">
-        {% if request.user.patient_profile.allergies %}
-        <p style="font-size:13.5px;margin:0;color:#92400e;">{{ request.user.patient_profile.allergies }}</p>
+        {% if request.user.patient.allergies %}
+        <p style="font-size:13.5px;margin:0;color:#92400e;">{{ request.user.patient.allergies }}</p>
         {% else %}
-        <p style="font-size:13.5px;color:var(--muted);margin:0;">No known allergies. <a href="{% url 'patient_profile' %}">Update</a></p>
+        <p style="font-size:13.5px;color:var(--muted);margin:0;">No known allergies. <a href="{% url 'accounts:profile' %}">Update</a></p>
         {% endif %}
       </div>
     </div>
 
-    <!-- Quick info -->
     <div class="card">
       <div class="card-header py-3 px-4">
         <h6 class="mb-0"><i class="fa fa-id-card me-2 text-primary"></i>Quick Info</h6>
@@ -172,15 +166,15 @@
         <dl class="mb-0" style="font-size:13.5px;">
           <div class="d-flex justify-content-between py-1 border-bottom">
             <dt class="fw-normal" style="color:var(--muted);">Blood Group</dt>
-            <dd class="mb-0 fw-semibold">{{ request.user.patient_profile.blood_group|default:"—" }}</dd>
+            <dd class="mb-0 fw-semibold">{{ request.user.patient.blood_group|default:"—" }}</dd>
           </div>
           <div class="d-flex justify-content-between py-1 border-bottom">
             <dt class="fw-normal" style="color:var(--muted);">Date of Birth</dt>
-            <dd class="mb-0 fw-semibold">{{ request.user.patient_profile.date_of_birth|date:"d M Y"|default:"—" }}</dd>
+            <dd class="mb-0 fw-semibold">{{ request.user.profile.date_of_birth|date:"d M Y"|default:"—" }}</dd>
           </div>
           <div class="d-flex justify-content-between py-1">
             <dt class="fw-normal" style="color:var(--muted);">Gender</dt>
-            <dd class="mb-0 fw-semibold">{{ request.user.patient_profile.get_gender_display|default:"—" }}</dd>
+            <dd class="mb-0 fw-semibold">{{ request.user.profile.get_gender_display|default:"—" }}</dd>
           </div>
         </dl>
       </div>

@@ -18,19 +18,16 @@
                 Home
             </a>
         </li>
-
         <li class="breadcrumb-item">
             <a href="{% url 'doctors:doctor_dashboard' %}" class="text-decoration-none">
                 Doctor Dashboard
             </a>
         </li>
-
         <li class="breadcrumb-item">
             <a href="{% url 'doctors:slot_list' %}" class="text-decoration-none">
                 My Slots
             </a>
         </li>
-
         <li class="breadcrumb-item active">
             {% if form.instance.pk %}
                 Edit Slot
@@ -43,12 +40,9 @@
 {% endblock %}
 
 {% block content %}
-
 <div class="row justify-content-center">
     <div class="col-lg-8">
-
         <div class="card shadow-sm border-0">
-
             <div class="card-header bg-primary text-white py-3">
                 <h4 class="mb-0">
                     {% if form.instance.pk %}
@@ -62,18 +56,14 @@
             </div>
 
             <div class="card-body p-4">
-
                 <form method="post">
                     {% csrf_token %}
-
                     {{ form|crispy }}
 
                     <hr class="my-4">
 
                     <div class="d-flex justify-content-between">
-
-                        <a href="{% url 'doctors:slot_list' %}"
-                           class="btn btn-outline-secondary">
+                        <a href="{% url 'doctors:slot_list' %}" class="btn btn-outline-secondary">
                             <i class="fa-solid fa-arrow-left me-2"></i>
                             Back
                         </a>
@@ -87,24 +77,18 @@
                                 Create Slot
                             {% endif %}
                         </button>
-
                     </div>
-
                 </form>
-
             </div>
-
         </div>
 
         <div class="card mt-4 border-0 shadow-sm">
-
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="fa-solid fa-circle-info text-primary me-2"></i>
                     Guidelines
                 </h5>
             </div>
-
             <div class="card-body">
                 <ul class="mb-0">
                     <li>Select the correct consultation date.</li>
@@ -114,10 +98,7 @@
                     <li>Booked slots should not be modified unless necessary.</li>
                 </ul>
             </div>
-
         </div>
-
     </div>
 </div>
-
 {% endblock %}

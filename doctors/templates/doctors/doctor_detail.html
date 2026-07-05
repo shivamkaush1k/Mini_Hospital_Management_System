@@ -3,79 +3,92 @@
 {% block title %}Doctor Details{% endblock %}
 
 {% block content %}
-
 <div class="card shadow">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4 text-center">
+                {% if doctor.image %}
+                    <img src="{{ doctor.image.url }}" class="rounded-circle img-fluid" alt="Doctor">
+                {% else %}
+                    <i class="bi bi-person-circle display-1"></i>
+                {% endif %}
+            </div>
 
-<div class="card-body">
+            <div class="col-md-8">
+                <h2>Dr. {{ doctor.user.get_full_name }}</h2>
+                <hr>
 
-<div class="row">
+                <table class="table">
+                    <tr>
+                        <th>Specialization</th>
+                        <td>{{ doctor.specialization }}</td>
+                    </tr>
+                    <tr>
+                        <th>Qualification</th>
+                        <td>{{ doctor.qualification }}</td>
+                    </tr>
+                    <tr>
+                        <th>Experience</th>
+                        <td>{{ doctor.experience }} Years</td>
+                    </tr>
+                    <tr>
+                        <th>Consultation Fee</th>
+                        <td>₹{{ doctor.consultation_fee }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>{{ doctor.user.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Phone</th>
+                        <td>{{ doctor.phone }}</td>
+                    </tr>
+                    <tr>
+                        <th>Rating</th>
+                        <td>{{ doctor.rating }}/5</td>
+                    </tr>
+                </table>
 
-<div class="col-md-4 text-center">
+                <h5 class="mt-4">Available Slots</h5>
 
-{% if doctor.image %}
-<img src="{{ doctor.image.url }}" class="rounded-circle img-fluid">
-{% else %}
-<i class="bi bi-person-circle display-1"></i>
-{% endif %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for slot in slots %}
+                            <tr>
+                                <td>{{ slot.date }}</td>
+                                <td>{{ slot.start_time }} - {{ slot.end_time }}</td>
+                                <td>
+                                    {% if slot.current_status == "Available" %}
+                                        <span class="badge bg-success">Available</span>
+                                    {% elif slot.current_status == "Booked" %}
+                                        <span class="badge bg-warning text-dark">Booked</span>
+                                    {% elif slot.current_status == "Inactive" %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Not Available</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center">No slots available.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
 
+                <a href="{% url 'appointments:book_appointment_form' doctor.pk %}" class="btn btn-success">
+                    Book Appointment
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
-
-<div class="col-md-8">
-
-<h2>Dr. {{ doctor.user.get_full_name }}</h2>
-
-<hr>
-
-<table class="table">
-
-<tr>
-<th>Specialization</th>
-<td>{{ doctor.specialization }}</td>
-</tr>
-
-<tr>
-<th>Qualification</th>
-<td>{{ doctor.qualification }}</td>
-</tr>
-
-<tr>
-<th>Experience</th>
-<td>{{ doctor.experience }} Years</td>
-</tr>
-
-<tr>
-<th>Consultation Fee</th>
-<td>₹{{ doctor.consultation_fee }}</td>
-</tr>
-
-<tr>
-<th>Email</th>
-<td>{{ doctor.user.email }}</td>
-</tr>
-
-<tr>
-<th>Phone</th>
-<td>{{ doctor.phone }}</td>
-</tr>
-
-<tr>
-<th>Rating</th>
-<td>{{ doctor.rating }}/5</td>
-</tr>
-
-</table>
-
-<a href="{% url 'appointments:book_appointment_form' doctor.pk %}"
-   class="btn btn-success">
-    Book Appointment
-</a>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 {% endblock %}

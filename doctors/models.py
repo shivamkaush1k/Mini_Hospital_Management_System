@@ -1,3 +1,4 @@
+from django.utils import timezone
 import uuid
 
 from django.contrib.auth.models import User
@@ -161,3 +162,23 @@ class DoctorSlot(models.Model):
             f"{self.start_time.strftime('%H:%M')} - "
             f"{self.end_time.strftime('%H:%M')}"
         )
+    @property
+    def current_status(self):
+        now = timezone.localtime()
+
+        if not self.is_active:
+           return "Inactive"
+
+        if self.is_booked:
+           return "Booked"
+
+        if self.date < now.date():
+           return "Not Available"
+
+        if self.date > now.date():
+           return "Available"
+
+        if now.time() > self.end_time:
+           return "Not Available"
+
+        return "Available"

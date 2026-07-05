@@ -3,13 +3,10 @@
 {% block title %}Manage Appointment Slots{% endblock %}
 
 {% block content %}
-
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2>Manage Appointment Slots</h2>
-        <p class="text-muted mb-0">
-            Create, edit and manage your consultation slots.
-        </p>
+        <p class="text-muted mb-0">Create, edit and manage your consultation slots.</p>
     </div>
 
     <a href="{% url 'doctors:slot_create' %}" class="btn btn-primary">
@@ -19,15 +16,10 @@
 </div>
 
 <div class="card shadow">
-
     <div class="card-body">
-
         {% if slots %}
-
         <div class="table-responsive">
-
             <table class="table table-hover align-middle">
-
                 <thead class="table-light">
                     <tr>
                         <th>Date</th>
@@ -38,102 +30,65 @@
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
-
                 <tbody>
-
                 {% for slot in slots %}
-
                 <tr>
-
                     <td>{{ slot.date }}</td>
-
                     <td>{{ slot.start_time }}</td>
-
                     <td>{{ slot.end_time }}</td>
-
                     <td>
-                        {% if slot.is_booked %}
-                             <span class="badge bg-danger">
-                                Booked
-                            </span>
+                        {% if slot.current_status == "Available" %}
+                        <span class="badge bg-success">{{ slot.current_status }}</span>
+                        {% elif slot.current_status == "Booked" %}
+                        <span class="badge bg-warning text-dark">{{ slot.current_status }}</span>
+                        {% elif slot.current_status == "Inactive" %}
+                        <span class="badge bg-secondary">{{ slot.current_status }}</span>
                         {% else %}
-                            <span class="badge bg-success">
-                                Available
-                            </span>
+                        <span class="badge bg-danger">{{ slot.current_status }}</span>
                         {% endif %}
                     </td>
-
                     <td>
                         {% if slot.is_active %}
-                            <span class="badge bg-primary">
-                                Active
-                            </span>
+                            <span class="badge bg-primary">Active</span>
                         {% else %}
-                            <span class="badge bg-secondary">
-                                Inactive
-                            </span>
+                            <span class="badge bg-secondary">Inactive</span>
                         {% endif %}
                     </td>
-
                     <td class="text-center">
-
-                        <a href="{% url 'doctors:slot_update' slot.id %}"
-                           class="btn btn-sm btn-warning">
+                        <a href="{% url 'doctors:slot_update' slot.id %}" class="btn btn-sm btn-warning">
                             <i class="fa-solid fa-pen"></i>
                         </a>
                         <form method="post" action="{% url 'doctors:slot_delete' slot.id %}" class="d-inline">
-                          {% csrf_token %}
-                          <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this slot?')">
-                            <i class="fa-solid fa-trash"></i>
-                          </button>
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this slot?')">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
                         </form>
                         {% if slot.is_active %}
-                        <a href="{% url 'doctors:slot_toggle' slot.id %}"
-                           class="btn btn-sm btn-secondary">
+                        <a href="{% url 'doctors:slot_toggle' slot.id %}" class="btn btn-sm btn-secondary">
                             Disable
                         </a>
                         {% else %}
-                        <a href="{% url 'doctors:slot_toggle' slot.id %}"
-                           class="btn btn-sm btn-success">
+                        <a href="{% url 'doctors:slot_toggle' slot.id %}" class="btn btn-sm btn-success">
                             Enable
                         </a>
                         {% endif %}
-
                     </td>
-
                 </tr>
-
                 {% endfor %}
-
                 </tbody>
-
             </table>
-
         </div>
-
         {% else %}
-
         <div class="text-center py-5">
-
             <i class="fa-solid fa-calendar-xmark fa-4x text-muted mb-3"></i>
-
             <h4>No Slots Available</h4>
-
-            <p class="text-muted">
-                You haven't created any appointment slots yet.
-            </p>
-
-            <a href="{% url 'doctors:slot_create' %}"
-               class="btn btn-primary">
+            <p class="text-muted">You haven't created any appointment slots yet.</p>
+            <a href="{% url 'doctors:slot_create' %}" class="btn btn-primary">
                 Create Your First Slot
             </a>
-
         </div>
-
         {% endif %}
-
     </div>
-
 </div>
-
 {% endblock %}

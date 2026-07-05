@@ -1,3 +1,4 @@
+from doctors.models import Doctor
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
@@ -77,22 +78,66 @@ def patient_detail(request, pk):
 @login_required
 @patient_required
 def patient_dashboard(request):
-
     patient = request.user.patient
 
-    appointments = patient.appointments.all()
+    appointments = (
+        patient.appointments
+        .select_related(
+            "slot",
+            "slot__doctor",
+            "slot__doctor__user",
+        )
+        .order_by("-appointment_date", "-slot__start_time")
+    )
 
-    prescriptions = Prescription.objects.filter(
+    prescriptions = (
+    Prescription.objects.filter(
         appointment__patient=patient
+    ).select_related(
+        "appointment",
+        "appointment__slot",
+        "appointment__slot__doctor",
+        "appointment__slot__doctor__user",
+    ).order_by("-created_at")
+)
+
+    upcoming_appointments = appointments.filter(
+        status__in=[
+            Appointment.Status.PENDING,
+            Appointment.Status.CONFIRMED,
+        ]
+    ).order_by(
+        "appointment_date",
+        "slot__start_time",
+    )
+
+    next_appointment = upcoming_appointments.first()
+
+    available_doctors = (
+        Doctor.objects.select_related(
+            "user",
+        ).all()
     )
 
     context = {
         "patient": patient,
+
         "appointments": appointments,
         "prescriptions": prescriptions,
+
         "appointment_count": appointments.count(),
         "prescription_count": prescriptions.count(),
         "history_count": patient.medical_records.count(),
+
+        "upcoming_count": upcoming_appointments.count(),
+
+        "next_appointment": next_appointment,
+
+        "recent_prescriptions": prescriptions[:5],
+
+        "upcoming_appointments": upcoming_appointments[:5],
+
+        "available_doctors": available_doctors[:4],
     }
 
     return render(
@@ -100,7 +145,6 @@ def patient_dashboard(request):
         "patients/dashboard.html",
         context,
     )
-
 
 @login_required
 @patient_required
@@ -119,19 +163,87 @@ def patient_update(request):
 @login_required
 @patient_required
 def medical_history(request):
-
     patient = request.user.patient
 
-    records = patient.medical_records.all()
+    appointments = (
+        patient.appointments.select_related(
+            "slot",
+            "slot__doctor",
+            "slot__doctor__user",
+        ).order_by("-appointment_date", "-appointment_time")
+    )
+
+    prescriptions = (
+        Prescription.objects.filter(appointment__patient=patient)
+        .select_related(
+            "appointment",
+            "appointment__slot",
+            "appointment__slot__doctor",
+            "appointment__slot__doctor__user",
+        )
+        .order_by("-created_at")
+    )
+
+    records = patient.medical_records.all().order_by("-visit_date", "-created_at")
+
+    history_items = []
+
+    for appointment in appointments:
+        history_items.append(
+            {
+                "type": "appointment",
+                "object": appointment,
+                "date": appointment.appointment_date,
+            }
+        )
+
+    for prescription in prescriptions:
+        history_items.append(
+            {
+                "type": "prescription",
+                "object": prescription,
+                "date": prescription.created_at.date(),
+            }
+        )
+
+    for record in records:
+        history_items.append(
+            {
+                "type": "record",
+                "object": record,
+                "date": record.visit_date,
+            }
+        )
+
+    history_items.sort(key=lambda item: item["date"], reverse=True)
+
+    unique_doctors = appointments.values("slot__doctor").distinct().count()
+
+    unique_diagnoses = (
+        prescriptions.exclude(diagnosis__isnull=True)
+        .exclude(diagnosis__exact="")
+        .values("diagnosis")
+        .distinct()
+        .count()
+    )
+
+    context = {
+        "patient": patient,
+        "records": records,
+        "appointments": appointments,
+        "prescriptions": prescriptions,
+        "history_items": history_items,
+        "total_appointments": appointments.count(),
+        "total_prescriptions": prescriptions.count(),
+        "unique_doctors": unique_doctors,
+        "unique_diagnoses": unique_diagnoses,
+    }
 
     return render(
         request,
         "patients/medical_history.html",
-        {
-            "records": records,
-        },
+        context,
     )
-
 
 @login_required
 @patient_required

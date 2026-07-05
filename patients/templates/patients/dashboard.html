@@ -22,8 +22,8 @@
   <div class="sidebar-section-label">Main Menu</div>
   <a class="sidebar-link active" href="{% url 'patients:dashboard' %}"><i class="fa fa-gauge"></i> Dashboard</a>
   <a class="sidebar-link" href="{% url 'doctors:doctor_list' %}"><i class="fa fa-user-doctor"></i> Find Doctors</a>
-  <a class="sidebar-link" href="{% url 'patients:appointment_history' %}"><i class="fa fa-calendar"></i> Appointments</a>
-  <a class="sidebar-link" href="{% url 'prescriptions:my_prescriptions' %}"><i class="fa fa-file-prescription"></i> Prescriptions</a>
+  <a class="sidebar-link" href="{% url 'appointments:my_appointments' %}"><i class="fa fa-calendar"></i> Appointments</a>
+  <a class="sidebar-link" href="{% url 'prescriptions:prescription_list' %}"><i class="fa fa-file-prescription"></i> Prescriptions</a>
   <a class="sidebar-link" href="{% url 'patients:medical_history' %}"><i class="fa fa-clock-rotate-left"></i> Medical History</a>
 
   <div class="sidebar-section-label mt-2">Account</div>
@@ -52,7 +52,6 @@
   </a>
 </div>
 
-<!-- Stat cards -->
 <div class="row g-3 mb-4">
   <div class="col-6 col-lg-3">
     <div class="stat-card">
@@ -92,7 +91,6 @@
   </div>
 </div>
 
-<!-- Next appointment banner -->
 {% if next_appointment %}
 <div class="card mb-4 p-0 overflow-hidden border-0" style="background:linear-gradient(135deg,var(--primary),#0d9488);box-shadow:0 4px 20px rgba(26,111,196,.25);">
   <div class="p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -102,29 +100,28 @@
       </div>
       <div>
         <div style="font-size:12px;color:rgba(255,255,255,.75);font-weight:500;">Next Appointment</div>
-        <div style="font-size:1.1rem;font-weight:700;color:#fff;">Dr. {{ next_appointment.doctor.user.get_full_name }}</div>
+        <div style="font-size:1.1rem;font-weight:700;color:#fff;">Dr. {{ next_appointment.slot.doctor.user.get_full_name }}</div>
         <div style="font-size:13px;color:rgba(255,255,255,.85);">
-          <i class="fa fa-calendar me-1"></i>{{ next_appointment.date|date:"D, d M Y" }}
+          <i class="fa fa-calendar me-1"></i>{{ next_appointment.appointment_date|date:"D, d M Y" }}
           &nbsp;·&nbsp;
           <i class="fa fa-clock me-1"></i>{{ next_appointment.slot.start_time|time:"g:i A" }}
         </div>
       </div>
     </div>
     <div class="d-flex gap-2">
-      <a href="{% url 'appointment_detail' next_appointment.pk %}" class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);">View Details</a>
-      <a href="{% url 'cancel_appointment' next_appointment.pk %}" class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);">Cancel</a>
+      <a href="{% url 'appointments:appointment_detail' next_appointment.pk %}" class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);">View Details</a>
+      <a href="{% url 'appointments:cancel_appointment' next_appointment.pk %}" class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);">Cancel</a>
     </div>
   </div>
 </div>
 {% endif %}
 
 <div class="row g-4">
-  <!-- Recent Prescriptions -->
   <div class="col-12 col-xl-6">
     <div class="card h-100">
       <div class="card-header d-flex justify-content-between align-items-center py-3 px-4">
         <span><i class="fa fa-file-prescription me-2 text-primary"></i>Recent Prescriptions</span>
-        <a href="{% url 'prescriptions:my_prescriptions' %}" class="btn btn-sm btn-outline-primary">View All</a>
+        <a href="{% url 'prescriptions:prescription_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
       </div>
       <div class="card-body p-0">
         {% if recent_prescriptions %}
@@ -153,7 +150,6 @@
     </div>
   </div>
 
-  <!-- Upcoming Appointments -->
   <div class="col-12 col-xl-6">
     <div class="card h-100">
       <div class="card-header d-flex justify-content-between align-items-center py-3 px-4">
@@ -168,13 +164,13 @@
             <div class="d-flex justify-content-between align-items-start">
               <div class="d-flex gap-3">
                 <div class="avatar-placeholder" style="width:40px;height:40px;border-radius:10px;">
-                  {{ appt.doctor.user.first_name|first }}
+                  {{ appt.slot.doctor.user.first_name|first }}
                 </div>
                 <div>
-                  <div class="fw-semibold" style="font-size:13.5px;">Dr. {{ appt.doctor.user.get_full_name }}</div>
-                  <div style="font-size:12px;color:var(--muted);">{{ appt.doctor.specialization }}</div>
+                  <div class="fw-semibold" style="font-size:13.5px;">Dr. {{ appt.slot.doctor.user.get_full_name }}</div>
+                  <div style="font-size:12px;color:var(--muted);">{{ appt.slot.doctor.specialization }}</div>
                   <div style="font-size:12px;color:var(--muted);" class="mt-1">
-                    <i class="fa fa-calendar me-1"></i>{{ appt.date|date:"d M Y" }}
+                    <i class="fa fa-calendar me-1"></i>{{ appt.appointment_date|date:"d M Y" }}
                     &nbsp;·&nbsp;
                     <i class="fa fa-clock me-1"></i>{{ appt.slot.start_time|time:"g:i A" }}
                   </div>
@@ -196,7 +192,6 @@
     </div>
   </div>
 
-  <!-- Available Doctors -->
   <div class="col-12">
     <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center py-3 px-4">
@@ -217,7 +212,7 @@
               <div style="min-width:0;">
                 <div class="fw-semibold" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Dr. {{ doctor.user.get_full_name }}</div>
                 <div style="font-size:12px;color:var(--muted);">{{ doctor.specialization }}</div>
-                <a href="{% url 'book_appointment' doctor.pk %}" class="btn btn-sm btn-primary mt-1" style="font-size:11px;padding:.2rem .6rem;">Book</a>
+                <a href="{% url 'appointments:book_appointment_form' doctor.pk %}" class="btn btn-sm btn-primary mt-1" style="font-size:11px;padding:.2rem .6rem;">Book</a>
               </div>
             </div>
           </div>

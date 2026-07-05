@@ -158,20 +158,30 @@ def book_appointment_form(request, doctor_id):
         form = AppointmentForm(request.POST, doctor=doctor)
 
         if form.is_valid():
+
             slot = get_object_or_404(
-                DoctorSlot.objects.select_for_update().select_related("doctor__user"),
+                DoctorSlot.objects.select_for_update().select_related(
+                    "doctor__user"
+                ),
                 pk=form.cleaned_data["slot"].pk,
                 doctor=doctor,
                 is_active=True,
             )
 
-            # The slot already carries its own date, so we derive the
-            # appointment date from it instead of expecting a separate
-            # "appointment_date" field on the form (the form doesn't have one).
             appointment_date = slot.date
             appointment_time = form.cleaned_data["appointment_time"]
 
-            if not (slot.start_time <= appointment_time < slot.end_time):
+            # Check whether the slot is currently available
+            if slot.current_status != "Available":
+                form.add_error(
+                    "slot",
+                    f"This slot is {slot.current_status.lower()}."
+                )
+
+            # Check appointment time falls within slot
+            elif not (
+                slot.start_time <= appointment_time < slot.end_time
+            ):
                 form.add_error(
                     "appointment_time",
                     (
@@ -181,13 +191,19 @@ def book_appointment_form(request, doctor_id):
                     ),
                 )
 
+            # Check slot capacity
             elif not _slot_has_capacity(slot, appointment_date):
                 form.add_error(
                     "slot",
                     "This slot is already full.",
                 )
 
-            elif _appointment_time_taken(slot, appointment_date, appointment_time):
+            # Check duplicate appointment time
+            elif _appointment_time_taken(
+                slot,
+                appointment_date,
+                appointment_time,
+            ):
                 form.add_error(
                     "appointment_time",
                     "This appointment time has already been booked.",
@@ -221,8 +237,13 @@ def book_appointment_form(request, doctor_id):
                 except Exception as e:
                     print("Email error:", e)
 
-                messages.success(request, "Appointment booked successfully.")
+                messages.success(
+                    request,
+                    "Appointment booked successfully."
+                )
+
                 return redirect("appointments:my_appointments")
+
     else:
         form = AppointmentForm(doctor=doctor)
 
@@ -415,34 +436,38 @@ def today_appointments(request):
 # ==========================================================
 # AJAX: DOCTOR SLOTS BY DATE
 # ==========================================================
+
 @login_required
 def doctor_slots_ajax(request, doctor_id):
     doctor = get_object_or_404(Doctor, pk=doctor_id)
 
     selected_date = parse_date(request.GET.get("date"))
+
     slots = doctor.slots.filter(
         is_active=True
-    ).order_by("date", "start_time")
-
-    # data must be initialized unconditionally, otherwise a missing/invalid
-    # "date" query param leaves `data` undefined and the loop below raises
-    # NameError.
-    data = {"slots": []}
+    ).order_by("start_time")
 
     if selected_date:
         slots = slots.filter(date=selected_date)
 
-    for slot in slots:
-        available = True
+    data = {
+        "slots": []
+    }
 
-        if selected_date:
-            available = _slot_has_capacity(slot, selected_date)
+    for slot in slots:
+
+        # Skip expired, booked or inactive slots
+        if slot.current_status != "Available":
+            continue
+
+        available = _slot_has_capacity(slot, slot.date)
 
         data["slots"].append({
             "id": str(slot.id),
             "date": slot.date.strftime("%Y-%m-%d"),
             "start_time": slot.start_time.strftime("%I:%M %p"),
             "end_time": slot.end_time.strftime("%I:%M %p"),
+            "status": slot.current_status,
             "is_available": available,
             "max_patients": slot.max_patients,
         })

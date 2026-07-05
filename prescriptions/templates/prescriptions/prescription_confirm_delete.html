@@ -1,127 +1,45 @@
 {% extends "base.html" %}
-{% load static %}
 
-{% block title %}Delete Prescription{% endblock %}
-
-{% block breadcrumb %}
-<nav aria-label="breadcrumb" class="mb-4">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-            <a href="{% url 'accounts:home' %}" class="text-decoration-none">Home</a>
-        </li>
-        <li class="breadcrumb-item">
-            <a href="{% url 'prescriptions:prescription_list' %}" class="text-decoration-none">
-                Prescriptions
-            </a>
-        </li>
-        <li class="breadcrumb-item active">
-            Delete Prescription
-        </li>
-    </ol>
-</nav>
-{% endblock %}
+{% block title %}Prescription Locked{% endblock %}
 
 {% block content %}
+<div class="container mt-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'accounts:home' %}">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'prescriptions:prescription_list' %}">Prescriptions</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Locked</li>
+    </ol>
+  </nav>
 
-<div class="row justify-content-center">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
 
-    <div class="col-lg-7">
+  <div class="card border-warning shadow-sm">
+    <div class="card-header bg-warning text-dark"><strong>Prescription Locked</strong></div>
+    <div class="card-body">
+      <p class="mb-2">
+        The prescription for
+        <strong>{{ prescription.patient.user.get_full_name|default:prescription.patient }}</strong>
+        issued on {{ prescription.created_at|date:"M d, Y" }} is locked.
+      </p>
+      <p class="text-muted mb-3">
+        Saved prescriptions cannot be edited or deleted.
+      </p>
 
-        <div class="card shadow-sm border-0">
-
-            <div class="card-header bg-danger text-white py-3">
-                <h4 class="mb-0">
-                    <i class="fa-solid fa-trash me-2"></i>
-                    Delete Prescription
-                </h4>
-            </div>
-
-            <div class="card-body text-center p-5">
-
-                <i class="fa-solid fa-file-circle-xmark text-danger mb-4"
-                   style="font-size:72px;"></i>
-
-                <h3 class="fw-bold mb-3">
-                    Are you sure?
-                </h3>
-
-                <p class="text-muted mb-4">
-                    This prescription will be permanently deleted.
-                    This action cannot be undone.
-                </p>
-
-                <div class="alert alert-light border text-start">
-
-                    <div class="row">
-
-                        <div class="col-md-6 mb-3">
-                            <strong>Patient</strong><br>
-                            {{ prescription.patient.user.get_full_name|default:"—" }}
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <strong>Doctor</strong><br>
-                            Dr. {{ prescription.doctor.user.get_full_name }}
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <strong>Date</strong><br>
-                            {{ prescription.created_at|date:"d M Y" }}
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <strong>Diagnosis</strong><br>
-                            {{ prescription.diagnosis|default:"—" }}
-                        </div>
-
-                        <!--
-                            "medicines" is a related manager (reverse FK to
-                            PrescriptionMedicine), not a text field, so it
-                            must be iterated rather than printed directly.
-                        -->
-                        {% with meds=prescription.medicines.all %}
-                        {% if meds %}
-                        <div class="col-12">
-                            <strong>Medicines</strong><br>
-                            {% for med in meds %}
-                                {{ med.name }} ({{ med.dosage }}){% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                        {% endwith %}
-
-                    </div>
-
-                </div>
-
-                <form method="post" class="mt-4">
-
-                    {% csrf_token %}
-
-                    <div class="d-flex justify-content-center gap-3">
-
-                        <a href="{% url 'prescriptions:prescription_detail' prescription.pk %}"
-                           class="btn btn-outline-secondary">
-                            <i class="fa-solid fa-arrow-left me-2"></i>
-                            Cancel
-                        </a>
-
-                        <button type="submit"
-                                class="btn btn-danger">
-                            <i class="fa-solid fa-trash me-2"></i>
-                            Delete Prescription
-                        </button>
-
-                    </div>
-
-                </form>
-
-            </div>
-
-        </div>
-
+      <a href="{% url 'prescriptions:prescription_detail' prescription.pk %}" class="btn btn-primary">
+        Back to Details
+      </a>
+      <a href="{% url 'prescriptions:prescription_list' %}" class="btn btn-secondary">
+        Back to List
+      </a>
     </div>
-
+  </div>
 </div>
-
 {% endblock %}

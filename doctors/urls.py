@@ -18,7 +18,10 @@ urlpatterns = [
     path("slots/add/", views.slot_create, name="slot_create"),
     path("slots/<uuid:pk>/edit/", views.slot_update, name="slot_update"),
     path("slots/<uuid:pk>/delete/", views.slot_delete, name="slot_delete"),
-
+    path(
+    "patients/prescriptions/",
+    views.doctor_patients_for_prescriptions,
+    name="doctor_patients_for_prescriptions",),
     path(
         "appointments/history/",
         views.appointment_history,

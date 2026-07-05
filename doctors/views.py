@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
@@ -72,22 +73,9 @@ def doctor_detail(request, pk):
         ),
         pk=pk,
     )
-
-    slots = doctor.slots.filter(is_active=True)
-
+    slots = (doctor.slots.filter(is_active=True, date__gte=timezone.localdate()).order_by("date", "start_time"))
     appointments = Appointment.objects.filter(slot__doctor=doctor)
-
-    return render(
-        request,
-        "doctors/doctor_detail.html",
-        {
-            "doctor": doctor,
-            "slots": slots,
-            "appointments": appointments,
-        }
-    )
-
-
+    return render(request,"doctors/doctor_detail.html",{"doctor": doctor,"slots": slots,"appointments": appointments,})
 @login_required
 def doctor_create(request):
     form = DoctorForm(request.POST or None)
@@ -135,25 +123,97 @@ def doctor_delete(request, pk):
     )
 
 
+# @login_required
+# def doctor_dashboard(request):
+
+#     doctor = request.user.doctor
+
+#     appointments = Appointment.objects.filter(slot__doctor=doctor)
+
+#     context = {
+#         "doctor": doctor,
+#         "appointments": appointments,
+#         "total_appointments": appointments.count(),
+#         "completed": appointments.filter(status=Appointment.Status.COMPLETED).count(),
+#         "pending": appointments.filter(status=Appointment.Status.PENDING).count(),
+#         "cancelled": appointments.filter(status=Appointment.Status.CANCELLED).count(),
+#         "total_patients": appointments.values("patient").distinct().count(),
+#         "revenue": (
+#             appointments.filter(status=Appointment.Status.COMPLETED).count()
+#             * doctor.consultation_fee
+#         ),
+#     }
+
+#     return render(
+#         request,
+#         "doctors/dashboard.html",
+#         context,
+#     )
+
+from django.utils import timezone
+
 @login_required
 def doctor_dashboard(request):
 
     doctor = request.user.doctor
+    today = timezone.localdate()
 
-    appointments = Appointment.objects.filter(slot__doctor=doctor)
+    appointments = (
+        Appointment.objects
+        .filter(slot__doctor=doctor)
+        .select_related("patient__user", "slot")
+        .order_by("-appointment_date", "-appointment_time")
+    )
 
     context = {
         "doctor": doctor,
-        "appointments": appointments,
+
+        # Cards
+        "today_appointments": appointments.filter(
+            appointment_date=today
+        ).count(),
+
+        "upcoming_appointments": appointments.filter(
+            appointment_date__gt=today,
+            status__in=[
+                Appointment.Status.PENDING,
+                Appointment.Status.CONFIRMED,
+            ],
+        ).count(),
+
+        "available_slots": doctor.slots.filter(
+            is_active=True,
+            is_booked=False,
+            date__gte=today,
+        ).count(),
+
+        "total_patients": appointments.values(
+            "patient"
+        ).distinct().count(),
+
         "total_appointments": appointments.count(),
-        "completed": appointments.filter(status=Appointment.Status.COMPLETED).count(),
-        "pending": appointments.filter(status=Appointment.Status.PENDING).count(),
-        "cancelled": appointments.filter(status=Appointment.Status.CANCELLED).count(),
-        "total_patients": appointments.values("patient").distinct().count(),
+
+        "completed": appointments.filter(
+            status=Appointment.Status.COMPLETED
+        ).count(),
+
+        "pending": appointments.filter(
+            status=Appointment.Status.PENDING
+        ).count(),
+
+        "cancelled": appointments.filter(
+            status=Appointment.Status.CANCELLED
+        ).count(),
+
         "revenue": (
-            appointments.filter(status=Appointment.Status.COMPLETED).count()
+            appointments.filter(
+                status=Appointment.Status.COMPLETED
+            ).count()
             * doctor.consultation_fee
         ),
+
+        # Table
+        "recent_appointments": appointments[:5],
     }
 
     return render(
@@ -161,7 +221,6 @@ def doctor_dashboard(request):
         "doctors/dashboard.html",
         context,
     )
-
 
 @login_required
 def slot_list(request):
@@ -289,3 +348,35 @@ def slot_toggle(request, pk):
         messages.success(request, "Slot disabled successfully.")
 
     return redirect("doctors:slot_list")
+
+
+@login_required
+def doctor_patients_for_prescriptions(request):
+    if not hasattr(request.user, "doctor"):
+        messages.error(request, "Only doctors can access this page.")
+        return redirect("accounts:dashboard")
+
+    doctor = request.user.doctor
+
+    appointments = (
+        Appointment.objects
+        .filter(
+            slot__doctor=doctor,
+            status=Appointment.Status.COMPLETED,
+        )
+        .select_related(
+            "patient__user",
+            "slot",
+            "prescription",
+        )
+        .order_by("-appointment_date", "-appointment_time")
+    )
+
+    return render(
+        request,
+        "doctors/patient_prescription_list.html",
+        {
+            "appointments": appointments,
+            "doctor": doctor,
+        },
+    )

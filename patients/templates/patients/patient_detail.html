@@ -184,7 +184,7 @@
                             <tr>
 
                                 <td>
-                                    {{ appointment.appointment_date|default:appointment.date }}
+                                    {{ appointment.appointment_date|date:"d M Y" }}
                                 </td>
 
                                 <td>
@@ -196,11 +196,37 @@
                                         —
                                     {% endif %}
                                 </td>
-
                                 <td>
+                                    {% if appointment.status == "Pending" %}
+                                    <span class="badge bg-warning text-dark">
+                                        {{ appointment.status }}
+                                    </span>
+                                    {% elif appointment.status == "Confirmed" %}
                                     <span class="badge bg-primary">
                                         {{ appointment.status }}
                                     </span>
+                                    {% elif appointment.status == "Completed" %}
+                                    <span class="badge bg-success">
+                                        {{ appointment.status }}
+                                    </span>
+                                    {% elif appointment.status == "Cancelled" %}
+                                    <span class="badge bg-danger">
+                                        {{ appointment.status }}
+                                    </span>
+                                    {% elif appointment.status == "Missed" %}
+                                    <span class="badge bg-dark">
+                                        {{ appointment.status }}
+                                    </span>
+
+                                    {% else %}
+
+                                    <span class="badge bg-secondary">
+
+                                        {{ appointment.status }}
+
+                                    </span>
+
+                                    {% endif %}
                                 </td>
 
                             </tr>

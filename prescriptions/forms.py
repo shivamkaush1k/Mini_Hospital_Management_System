@@ -1,129 +1,113 @@
 from django import forms
-from django.core.exceptions import ValidationError
+from django.forms import inlineformset_factory
+from django.utils import timezone
 
-from appointments.models import Appointment
-from .models import Prescription
+from .models import Prescription, PrescriptionMedicine
 
 
 class PrescriptionForm(forms.ModelForm):
+    """
+    `appointment` is never exposed as a field here -- it's fixed by the
+    URL the doctor arrived from (`prescriptions:prescription_create`)
+    and assigned directly on the instance in the view, the same way
+    `record.patient` is set in `patients.views.add_medical_record`.
+    """
+
     class Meta:
         model = Prescription
         fields = (
-            "appointment",
             "diagnosis",
             "advice",
             "follow_up_required",
             "follow_up_date",
         )
+
         widgets = {
-            "appointment": forms.Select(
-                attrs={"class": "form-select"}
-            ),
             "diagnosis": forms.Textarea(
-                attrs={
-                    "class": "form-control",
-                    "rows": 3,
-                    "placeholder": "Enter diagnosis..."
-                }
+                attrs={"class": "form-control", "rows": 3, "placeholder": "Diagnosis"}
             ),
             "advice": forms.Textarea(
-                attrs={
-                    "class": "form-control",
-                    "rows": 4,
-                    "placeholder": "Additional advice..."
-                }
+                attrs={"class": "form-control", "rows": 3, "placeholder": "Advice for the patient"}
             ),
             "follow_up_required": forms.CheckboxInput(
                 attrs={"class": "form-check-input"}
             ),
             "follow_up_date": forms.DateInput(
-                attrs={
-                    "type": "date",
-                    "class": "form-control"
-                }
+                attrs={"type": "date", "class": "form-control"}
             ),
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def clean_follow_up_date(self):
+        follow_up_date = self.cleaned_data.get("follow_up_date")
 
-        queryset = (
-            Appointment.objects.filter(
-                status=Appointment.Status.COMPLETED
-            )
-            .select_related(
-                "patient__user",
-                "slot__doctor__user",
-            )
-        )
+        if follow_up_date and follow_up_date < timezone.localdate():
+            raise forms.ValidationError("Follow-up date cannot be before today.")
 
-        if self.instance and self.instance.pk:
-            queryset = queryset.exclude(
-                prescription__isnull=False
-            ) | Appointment.objects.filter(
-                pk=self.instance.appointment_id
-            )
-        else:
-            queryset = queryset.exclude(
-                prescription__isnull=False
-            )
-
-        self.fields["appointment"].queryset = queryset.distinct()
+        return follow_up_date
 
     def clean(self):
         cleaned_data = super().clean()
-        follow_up_required = cleaned_data.get("follow_up_required")
-        follow_up_date = cleaned_data.get("follow_up_date")
 
-        if follow_up_required and not follow_up_date:
-            raise ValidationError("Please select a follow-up date.")
+        if cleaned_data.get("follow_up_required") and not cleaned_data.get("follow_up_date"):
+            raise forms.ValidationError(
+                "Please provide a follow-up date since follow-up is marked as required."
+            )
 
         return cleaned_data
 
 
+class PrescriptionMedicineForm(forms.ModelForm):
+    class Meta:
+        model = PrescriptionMedicine
+        fields = ("name", "dosage", "frequency", "duration", "instructions")
+
+        widgets = {
+            "name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Medicine name"}
+            ),
+            "dosage": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "e.g. 500mg"}
+            ),
+            "frequency": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "e.g. Twice a day"}
+            ),
+            "duration": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "e.g. 5 days"}
+            ),
+            "instructions": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "e.g. After food"}
+            ),
+        }
+
+
+PrescriptionMedicineFormSet = inlineformset_factory(
+    Prescription,
+    PrescriptionMedicine,
+    form=PrescriptionMedicineForm,
+    extra=1,
+    can_delete=True,
+    min_num=1,
+    validate_min=True,
+)
+
+
 class PrescriptionSearchForm(forms.Form):
+
     patient = forms.CharField(
         required=False,
         widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Patient Name",
-            }
+            attrs={"class": "form-control", "placeholder": "Patient Name"}
         ),
     )
+
     doctor = forms.CharField(
         required=False,
         widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Doctor Name",
-            }
+            attrs={"class": "form-control", "placeholder": "Doctor Name"}
         ),
     )
-    diagnosis = forms.CharField(
+
+    follow_up_required = forms.BooleanField(
         required=False,
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Diagnosis",
-            }
-        ),
-    )
-    from_date = forms.DateField(
-        required=False,
-        widget=forms.DateInput(
-            attrs={
-                "type": "date",
-                "class": "form-control",
-            }
-        ),
-    )
-    to_date = forms.DateField(
-        required=False,
-        widget=forms.DateInput(
-            attrs={
-                "type": "date",
-                "class": "form-control",
-            }
-        ),
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
     )

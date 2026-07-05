@@ -1,73 +1,48 @@
 {% extends "base.html" %}
 
-{% block title %}Patients{% endblock %}
+{% block title %}My Patients{% endblock %}
 
 {% block content %}
-
 <h2>My Patients</h2>
 
 <table class="table table-bordered shadow">
-
-<thead class="table-success">
-
-<tr>
-
-<th>Name</th>
-
-<th>Age</th>
-
-<th>Gender</th>
-
-<th>Last Visit</th>
-
-<th>Prescription</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-{% for patient in patients %}
-
-<tr>
-
-<td>{{ patient.user.get_full_name }}</td>
-
-<td>{{ patient.age }}</td>
-
-<td>{{ patient.gender }}</td>
-
-<td>{{ patient.last_visit }}</td>
-
-<td>
-
-<a href="{% url 'prescriptions:create' patient.id %}" class="btn btn-success btn-sm">
-
-Add Prescription
-
-</a>
-
-</td>
-
-</tr>
-
-{% empty %}
-
-<tr>
-
-<td colspan="5">
-
-No patients found.
-
-</td>
-
-</tr>
-
-{% endfor %}
-
-</tbody>
-
+    <thead class="table-success">
+        <tr>
+            <th>Patient</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Appointment Date</th>
+            <th>Status</th>
+            <th>Prescription</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for appointment in appointments %}
+        <tr>
+            <td>{{ appointment.patient.user.get_full_name }}</td>
+            <td>{{ appointment.patient.age }}</td>
+            <td>{{ appointment.patient.gender }}</td>
+            <td>{{ appointment.appointment_date }}</td>
+            <td>{{ appointment.status }}</td>
+            <td>
+                {% if appointment.status == "COMPLETED" and not appointment.prescription %}
+                    <a href="{% url 'prescriptions:prescription_create' appointment.id %}" class="btn btn-success btn-sm">
+                        Add Prescription
+                    </a>
+                {% elif appointment.prescription %}
+                    <a href="{% url 'prescriptions:prescription_detail' appointment.prescription.pk %}" class="btn btn-outline-primary btn-sm">
+                        View Prescription
+                    </a>
+                {% else %}
+                    <span class="text-muted small">Not available</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No patients found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
-
 {% endblock %}

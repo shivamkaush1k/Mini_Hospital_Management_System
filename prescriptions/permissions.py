@@ -1,4 +1,4 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import BasePermission
 
 
 class CanViewPrescriptions(BasePermission):
@@ -11,6 +11,8 @@ class CanViewPrescriptions(BasePermission):
 
 
 class CanManagePrescriptions(BasePermission):
+    """Only doctors and staff may create/update/delete prescriptions."""
+
     def has_permission(self, request, view):
         user = request.user
         return bool(
@@ -27,7 +29,7 @@ class IsPrescriptionOwnerDoctorPatientOrAdmin(BasePermission):
         if user.is_staff:
             return True
         if hasattr(user, "doctor"):
-            return obj.appointment.slot.doctor.user == user
+            return obj.appointment.slot.doctor.user_id == user.id
         if hasattr(user, "patient"):
-            return obj.appointment.patient.user == user
+            return obj.appointment.patient.user_id == user.id
         return False

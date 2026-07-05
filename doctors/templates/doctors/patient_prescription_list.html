@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Prescriptions{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Completed Appointments</h2>
+            <p class="text-muted mb-0">Create or view prescriptions for completed consultations.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Patient</th>
+                                <th>Age</th>
+                                <th>Gender</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th class="text-end">Prescription</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in appointments %}
+                                <tr>
+                                    <td>{{ appointment.patient.user.get_full_name|default:appointment.patient.user.username }}</td>
+                                    <td>{{ appointment.patient.age|default:"—" }}</td>
+                                    <td>{{ appointment.patient.gender|default:"—" }}</td>
+                                    <td>{{ appointment.appointment_date }}</td>
+                                    <td>{{ appointment.appointment_time }}</td>
+                                    <td class="text-end">
+                                        {% if appointment.prescription %}
+                                            <a href="{% url 'prescriptions:prescription_detail' appointment.prescription.pk %}" class="btn btn-sm btn-outline-primary">
+                                                View Prescription
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'prescriptions:prescription_create' appointment.pk %}" class="btn btn-sm btn-success">
+                                                Add Prescription
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <p class="text-muted mb-0">No completed appointments found.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
