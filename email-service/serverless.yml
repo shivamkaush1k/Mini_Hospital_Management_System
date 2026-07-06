@@ -1,0 +1,52 @@
+service: mini-hms-email-service
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.11
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  memorySize: 256
+  timeout: 15
+  environment:
+    SMTP_HOST: ${env:SMTP_HOST}
+    SMTP_PORT: ${env:SMTP_PORT}
+    SMTP_USER: ${env:SMTP_USER}
+    SMTP_PASSWORD: ${env:SMTP_PASSWORD}
+    FROM_EMAIL: ${env:FROM_EMAIL}
+  # Uncomment if you'd rather pull secrets from SSM Parameter Store
+  # instead of shell env vars at deploy time:
+  # environment:
+  #   SMTP_HOST: ${ssm:/mini-hms/${self:provider.stage}/smtp-host}
+  #   SMTP_PORT: ${ssm:/mini-hms/${self:provider.stage}/smtp-port}
+  #   SMTP_USER: ${ssm:/mini-hms/${self:provider.stage}/smtp-user}
+  #   SMTP_PASSWORD: ${ssm:/mini-hms/${self:provider.stage}/smtp-password~true}
+  #   FROM_EMAIL: ${ssm:/mini-hms/${self:provider.stage}/from-email}
+
+package:
+  patterns:
+    - '!node_modules/**'
+    - '!.git/**'
+    - '!venv/**'
+    - 'templates/**'
+
+functions:
+  sendEmail:
+    handler: handler.send_email_handler
+    events:
+      - httpApi:
+          path: /send-email
+          method: post
+
+plugins:
+  - serverless-python-requirements
+  - serverless-offline
+
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux
+    slim: true
+
+  serverless-offline:
+    httpPort: 4000

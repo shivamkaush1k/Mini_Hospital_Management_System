@@ -47,3 +47,5 @@ ipython>=9.0
 # Production WSGI Server (Optional)
 
 gunicorn>=23.0
+
+Jinja2==3.1.4
