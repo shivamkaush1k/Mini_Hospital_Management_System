@@ -1,4 +1,5 @@
 from pathlib import Path
+from decouple import config, Csv
 import os
 
 # ======================================================
@@ -10,22 +11,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ======================================================
 # SECURITY
 # ======================================================
-SECRET_KEY = "django-insecure-change-this-in-production"
-
-DEBUG = True
-
+SECRET_KEY = config("SECRET_KEY")
+DEBUG = config("DEBUG", default=False, cast=bool)
 # Empty ALLOWED_HOSTS was causing the CSRF failure whenever the site was
 # accessed via anything other than exactly "localhost"/"127.0.0.1".
 # Add any host/IP/tunnel domain you actually use to access the site.
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "0.0.0.0",
-    ".onrender.com",
-    # "your-lan-ip",                     # e.g. "192.168.1.10"
-    # "your-tunnel-domain.ngrok-free.app",
-    # "your-codespace-name-8000.app.github.dev",
-]
+ALLOWED_HOSTS = config(
+    "ALLOWED_HOSTS",
+    default="127.0.0.1,localhost",
+    cast=Csv()
+)
 
 
 # ======================================================
@@ -138,7 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # ======================================================
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "Asia/Kolkata"
+TIME_ZONE = config("TIME_ZONE", default="Asia/Kolkata")
 
 USE_I18N = True
 
@@ -208,9 +203,16 @@ REST_FRAMEWORK = {
 # ======================================================
 # EMAIL
 # ======================================================
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = config("EMAIL_BACKEND")
 
+EMAIL_HOST = config("EMAIL_HOST")
+EMAIL_PORT = config("EMAIL_PORT", cast=int)
+EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool)
 
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+
+EMAIL_SERVICE_URL = config("EMAIL_SERVICE_URL")
 # ======================================================
 # CSRF
 # ======================================================
@@ -218,12 +220,11 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # access the site over HTTPS through any proxy/tunnel (Codespaces, ngrok,
 # Replit, a custom domain, etc.), Django 4+ requires that origin listed here
 # or the POST gets rejected regardless of ALLOWED_HOSTS.
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    # "https://your-tunnel-domain.ngrok-free.app",
-    # "https://your-codespace-name-8000.app.github.dev",
-]
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default="http://127.0.0.1:8000,http://localhost:8000",
+    cast=Csv()
+)
 
 # Only needed if you access the site over plain HTTP locally (default dev
 # server). If you switch to HTTPS in production, set these to True there.
@@ -254,3 +255,13 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID")
+
+GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET")
+
+GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI")
+
+GOOGLE_SCOPES = config("GOOGLE_SCOPES").split(",")
+
+LOG_LEVEL = config("LOG_LEVEL", default="INFO")
