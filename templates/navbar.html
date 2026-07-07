@@ -2,7 +2,6 @@
 <nav class="main-navbar navbar navbar-expand-lg">
   <div class="container-fluid px-3 px-lg-4">
 
-    <!-- Brand -->
     <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="{% url 'accounts:home' %}">
       <div style="width:34px;height:34px;background:var(--primary);border-radius:9px;display:flex;align-items:center;justify-content:center;">
         <i class="fa-solid fa-heart-pulse text-white" style="font-size:.95rem;"></i>
@@ -10,13 +9,11 @@
       <span class="navbar-brand-text">Medi<span>Care</span></span>
     </a>
 
-    <!-- Toggler -->
-    <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+    <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
       <i class="fa-solid fa-bars" style="color:var(--text);"></i>
     </button>
 
-    <div class="collapse navbar-collapse" id="mainNav">
-      <!-- Center links -->
+    <div class="collapse navbar-collapse mt-3 mt-lg-0" id="mainNav">
       <ul class="navbar-nav mx-auto gap-1">
         <li class="nav-item">
           <a class="nav-link px-3 fw-500" href="{% url 'accounts:home' %}">
@@ -29,31 +26,30 @@
         <li class="nav-item">
           <a class="nav-link px-3" href="{% url 'accounts:contacts' %}">Contact</a>
         </li>
+
         {% if user.is_authenticated %}
-        {% if user.profile.role == "DOCTOR" %}
-        <li class="nav-item">
-          <a class="nav-link px-3" href="{% url 'patients:patient_list' %}">
-            <i class="fa fa-users me-1 text-muted" style="font-size:12px;"></i>
-            Patients
-          </a>
-        </li>
-        {% elif user.profile.role == "PATIENT" %}
-        <li class="nav-item">
-          <a class="nav-link px-3" href="{% url 'doctors:doctor_list' %}">
-            <i class="fa fa-user-doctor me-1 text-muted" style="font-size:12px;"></i>
-            Doctors
-          </a>
-        </li>
-        {% endif %}
+          {% if user.profile.role == "DOCTOR" %}
+          <li class="nav-item">
+            <a class="nav-link px-3" href="{% url 'patients:patient_list' %}">
+              <i class="fa fa-users me-1 text-muted" style="font-size:12px;"></i>
+              Patients
+            </a>
+          </li>
+          {% elif user.profile.role == "PATIENT" %}
+          <li class="nav-item">
+            <a class="nav-link px-3" href="{% url 'doctors:doctor_list' %}">
+              <i class="fa fa-user-doctor me-1 text-muted" style="font-size:12px;"></i>
+              Doctors
+            </a>
+          </li>
+          {% endif %}
         {% endif %}
       </ul>
 
-      <!-- Right actions -->
-      <ul class="navbar-nav align-items-center gap-2">
+      <ul class="navbar-nav align-items-lg-center gap-2 ms-lg-auto">
         {% if user.is_authenticated %}
 
-          <!-- Dashboard quick-link -->
-          {% if user.profile.role == 'doctor' %}
+          {% if user.profile.role == 'DOCTOR' %}
           <li class="nav-item">
             <a class="nav-link px-2" href="{% url 'doctors:dashboard' %}">
               <i class="fa fa-gauge me-1"></i>Dashboard
@@ -67,7 +63,6 @@
           </li>
           {% endif %}
 
-          <!-- Notifications bell -->
           <li class="nav-item">
             <a class="nav-link position-relative px-2" href="#" title="Notifications">
               <i class="fa-regular fa-bell" style="font-size:1.1rem;"></i>
@@ -79,12 +74,10 @@
             </a>
           </li>
 
-          <!-- User dropdown -->
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 ps-2 pe-0" href="#"
-               data-bs-toggle="dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 ps-2 pe-0" href="#" data-bs-toggle="dropdown" aria-expanded="false">
               {% if user.profile.photo %}
-                <img src="{{ user.profile.photo.url }}" class="avatar" alt="Avatar" />
+                <img src="{{ user.profile.photo.url }}" class="avatar" alt="Avatar">
               {% else %}
                 <div class="avatar-placeholder">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
               {% endif %}
@@ -93,13 +86,15 @@
             <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius:12px;min-width:180px;">
               <li><h6 class="dropdown-header text-muted" style="font-size:11px;">{{ user.email }}</h6></li>
               <li><hr class="dropdown-divider my-1"></li>
-              {% if user.profile.role == 'doctor' %}
+
+              {% if user.profile.role == 'DOCTOR' %}
               <li><a class="dropdown-item py-2" href="{% url 'doctors:doctor_profile' %}"><i class="fa fa-circle-user me-2 text-muted"></i>My Profile</a></li>
               <li><a class="dropdown-item py-2" href="{% url 'doctors:doctor_slots' %}"><i class="fa fa-calendar-check me-2 text-muted"></i>Manage Slots</a></li>
               {% else %}
               <li><a class="dropdown-item py-2" href="{% url 'accounts:profile' %}"><i class="fa fa-circle-user me-2 text-muted"></i>My Profile</a></li>
               <li><a class="dropdown-item py-2" href="{% url 'patients:appointment_history' %}"><i class="fa fa-calendar me-2 text-muted"></i>Appointments</a></li>
               {% endif %}
+
               <li><hr class="dropdown-divider my-1"></li>
               <li>
                 <a class="dropdown-item py-2 text-danger" href="{% url 'accounts:logout' %}">

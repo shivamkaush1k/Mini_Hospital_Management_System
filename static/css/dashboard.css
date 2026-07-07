@@ -1,139 +1,188 @@
-/* =========================
-   DASHBOARD STYLES
-========================= */
+/* =========================================================================
+   MINI HMS — static/css/dashboard.css
+   Dashboard, profile, and doctor-listing specific components.
+   Depends on the :root tokens defined in style.css — load style.css first.
+   ========================================================================= */
 
+/* -------------------------------------------------------------------------
+   1. Stat cards
+   ------------------------------------------------------------------------- */
+.stat-card {
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.stat-icon {
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+.stat-value { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+.stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* Alternate gradient header + tile style used on some dashboards */
 .dashboard-header {
-    padding: 20px;
-    background: linear-gradient(135deg, #0d6efd, #0a58ca);
-    color: white;
-    border-radius: 12px;
-    margin-bottom: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
 }
-
-.stats-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    transition: 0.3s;
+.stats-card,
+.dashboard-card {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s ease;
 }
+.stats-card:hover,
+.dashboard-card:hover { transform: scale(1.03); }
+.stats-card h2,
+.dashboard-card h2 { font-size: 2.2rem; color: var(--primary); margin: 0; }
 
-.stats-card:hover {
-    transform: scale(1.03);
-}
+/* -------------------------------------------------------------------------
+   2. Doctor cards (doctor list / featured doctors)
+   ------------------------------------------------------------------------- */
+.doctor-card { border-radius: var(--radius); overflow: hidden; }
+.doctor-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
 
-.stats-card h2 {
-    font-size: 2.2rem;
-    color: #0d6efd;
-}
-
-/* Doctor profile image */
 .profile-img {
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid #0d6efd;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--primary);
 }
 
+/* -------------------------------------------------------------------------
+   3. Info card — Personal / Professional / Medical Information sections
+   ------------------------------------------------------------------------- */
+.info-card .card-header {
+  font-weight: 600;
+  border-bottom: none;
+}
+.info-card table.table { margin-bottom: 0; }
+.info-card table.table th,
+.info-card table.table td { border-color: #f1f3f5; }
 
-/* =========================
-   PROFILE PAGE
-========================= */
+/* -------------------------------------------------------------------------
+   4. Slot picker buttons — appointment booking page
+   ------------------------------------------------------------------------- */
+.slot-btn { font-size: 12px; padding: .35rem .75rem; border-radius: 8px; }
 
-/* Header card: photo + name + role + actions */
-.profile-header .card-body {
-    padding: 28px;
+/* -------------------------------------------------------------------------
+   5. Status badges (appointments / prescriptions / records)
+   ------------------------------------------------------------------------- */
+.badge-status-completed { background-color: var(--success); color: #fff; }
+.badge-status-pending   { background-color: var(--accent);  color: #212529; }
+.badge-status-cancelled { background-color: var(--danger);  color: #fff; }
+
+/* -------------------------------------------------------------------------
+   6. Timeline (medical history)
+   ------------------------------------------------------------------------- */
+.timeline { position: relative; padding-left: 2rem; }
+.timeline::before { content: ''; position: absolute; left: .5rem; top: 0; bottom: 0; width: 2px; background: var(--border); }
+.timeline-item { position: relative; margin-bottom: 1.5rem; }
+.timeline-dot {
+  position: absolute; left: -1.65rem; top: .3rem;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--primary); border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--primary);
 }
 
-.profile-header img {
-    border: 4px solid #0d6efd;
+/* -------------------------------------------------------------------------
+   7. Registration role picker
+   ------------------------------------------------------------------------- */
+.role-card {
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, transform .1s ease;
 }
+.role-card:hover { transform: translateY(-2px); }
+.role-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
-/* Action button column (Edit Profile / Manage Slots / etc.) */
+/* -------------------------------------------------------------------------
+   8. Profile page
+   ------------------------------------------------------------------------- */
+.profile-header .card-body { padding: 28px; }
+.profile-header img { border: 4px solid var(--primary); }
+
 .profile-header .col-md-3.text-md-end {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
 }
-
-.profile-header .col-md-3.text-md-end .btn {
-    margin-top: 0;
-}
-
-@media (max-width: 767px) {
-    .profile-header .col-md-3.text-md-end {
-        margin-top: 16px;
-    }
-}
+.profile-header .col-md-3.text-md-end .btn { margin-top: 0; }
 
 .profile-role-badge {
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    font-size: 0.75rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  font-size: .75rem;
 }
 
-/* Compact stat tiles used on doctor/patient profile sections
-   (distinct from the larger .stats-card used on dashboards) */
 .profile-stat {
-    background: white;
-    border-radius: 12px;
-    padding: 18px 10px;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 18px 10px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s ease, box-shadow .2s ease;
 }
+.profile-stat:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0,0,0,.08); }
+.profile-stat h5 { font-size: 1.6rem; font-weight: 700; color: var(--primary); margin-bottom: 2px; }
+.profile-stat small { text-transform: uppercase; letter-spacing: .03em; font-size: .72rem; }
 
-.profile-stat:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(0,0,0,0.08);
-}
+.profile-info-table th { width: 40%; color: var(--muted); font-weight: 600; font-size: .9rem; white-space: nowrap; }
+.profile-info-table td { font-weight: 500; }
 
-.profile-stat h5 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #0d6efd;
-    margin-bottom: 2px;
-}
-
-.profile-stat small {
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    font-size: 0.72rem;
-}
-
-/* Info tables inside profile cards (Personal / Professional / Medical) */
-.profile-info-table th {
-    width: 40%;
-    color: #6c757d;
-    font-weight: 600;
-    font-size: 0.9rem;
-    white-space: nowrap;
-}
-
-.profile-info-table td {
-    font-weight: 500;
-}
-
-/* Card header accent bar used above role-specific sections */
 .card-header.profile-section-header {
-    background: #f8f9fa;
-    border-bottom: 3px solid #0d6efd;
-    font-weight: 600;
+  background: #f8f9fa;
+  border-bottom: 3px solid var(--primary);
+  font-weight: 600;
 }
 
-/* Recent appointments status badges on the profile page */
-.badge-status-completed {
-    background-color: #198754;
+/* =========================================================================
+   9. Responsive
+   ========================================================================= */
+
+@media (max-width: 991.98px) {
+  .profile-header .col-md-3.text-md-end { margin-top: 16px; }
 }
 
-.badge-status-pending {
-    background-color: #ffc107;
-    color: #212529;
+@media (max-width: 767.98px) {
+  .stat-value { font-size: 1.4rem; }
+  .stat-card { padding: 1rem 1.1rem; gap: .75rem; }
+  .stat-icon { width: 44px; height: 44px; font-size: 1.1rem; }
+
+  .doctor-card:hover { transform: none; }
+
+  .timeline { padding-left: 1.5rem; }
+  .timeline-dot { left: -1.35rem; }
 }
 
-.badge-status-cancelled {
-    background-color: #dc3545;
+@media (max-width: 575.98px) {
+  .stat-value,
+  .stats-card h2,
+  .dashboard-card h2 { font-size: 1.3rem; }
+
+  .profile-img { width: 100px; height: 100px; }
+
+  .role-card { padding: 1rem; }
+  .role-card i { font-size: 1.25rem !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .doctor-card, .stats-card, .dashboard-card, .profile-stat { transition: none; }
 }

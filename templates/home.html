@@ -25,8 +25,7 @@
                 <p style="color:#bfdbfe;font-size:1.05rem;line-height:1.75;max-width:480px;margin-bottom:2rem;">
                     Connecting patients with trusted, experienced specialists. Book appointments, manage prescriptions, and take charge of your health — all in one place.
                 </p>
-
-                <div class="d-flex flex-wrap gap-3">
+                <div class="hero-buttons d-flex flex-wrap gap-3">
                     {% if user.is_authenticated %}
                         <a href="{% url 'doctors:doctor_list' %}"
                            class="btn btn-light btn-lg px-4"
@@ -73,8 +72,8 @@
                     </div>
                 </div>
             </div>
+            <div class="col-12 col-lg-6 d-flex justify-content-center mt-5 mt-lg-0">
 
-            <div class="col-12 col-lg-6 d-none d-lg-flex justify-content-center">
                 <div style="position:relative;">
                     <div style="width:420px;height:420px;border-radius:50%;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;">
                         <div style="width:360px;height:360px;border-radius:50%;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;">
