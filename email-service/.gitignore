@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+node_modules/
+.serverless/
+.requirements/
+venv/
+.venv/
+.vscode/
+.idea/
