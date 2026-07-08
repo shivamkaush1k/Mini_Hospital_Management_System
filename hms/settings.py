@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     "rest_framework",
     'crispy_forms',
     'crispy_bootstrap5',
+    "cloudinary",
+    "cloudinary_storage",
 
     # Local Apps
     "accounts.apps.AccountsConfig",
@@ -155,10 +157,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # ======================================================
 # MEDIA FILES
 # ======================================================
-MEDIA_URL = "/media/"
-
-MEDIA_ROOT = BASE_DIR / "media"
-
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 # ======================================================
 # DEFAULT PRIMARY KEY
@@ -265,3 +264,9 @@ GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI")
 GOOGLE_SCOPES = config("GOOGLE_SCOPES").split(",")
 
 LOG_LEVEL = config("LOG_LEVEL", default="INFO")
+
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": config("CLOUDINARY_CLOUD_NAME"),
+    "API_KEY": config("CLOUDINARY_API_KEY"),
+    "API_SECRET": config("CLOUDINARY_API_SECRET"),
+}
