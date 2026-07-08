@@ -1,35 +1,185 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
 
-{% block title %}
-About
-{% endblock %}
+{% block title %}About Us{% endblock %}
 
 {% block content %}
 
-<h1>About Our Hospital</h1>
+<div class="container py-4">
 
-<hr>
+    <!-- Hero -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body text-center py-5">
+            <div class="mb-3">
+                <i class="fa-solid fa-hospital fa-3x text-primary"></i>
+            </div>
 
-<p>
+            <h1 class="fw-bold mb-3">
+                Welcome to <span class="text-primary">MediCare Hospital</span>
+            </h1>
 
-Mini Hospital Management System is designed to simplify healthcare operations by providing tools for doctors, patients, and administrators.
+            <p class="lead text-muted mx-auto" style="max-width:750px;">
+                Mini Hospital Management System is a modern healthcare platform
+                designed to simplify hospital operations, improve patient care,
+                and provide an efficient experience for doctors, patients, and
+                administrators.
+            </p>
+        </div>
+    </div>
 
-</p>
+    <div class="row g-4">
 
-<ul>
+        <!-- About -->
+        <div class="col-lg-8">
 
-<li>Doctor Management</li>
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fa-solid fa-circle-info text-primary me-2"></i>
+                        About Our System
+                    </h4>
+                </div>
 
-<li>Patient Records</li>
+                <div class="card-body">
 
-<li>Appointment Booking</li>
+                    <p class="text-muted">
+                        Our Hospital Management System digitizes hospital
+                        workflows, allowing healthcare professionals to manage
+                        appointments, prescriptions, patient records, and doctor
+                        schedules efficiently through an intuitive interface.
+                    </p>
 
-<li>Prescription Management</li>
+                    <p class="text-muted mb-0">
+                        Built using Django, Bootstrap, PostgreSQL, and modern
+                        web technologies, the platform ensures security,
+                        reliability, and an excellent user experience.
+                    </p>
 
-<li>Secure Authentication</li>
+                </div>
+            </div>
 
-<li>REST API Support</li>
+        </div>
 
-</ul>
+        <!-- Statistics -->
+        <div class="col-lg-4">
+
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fa-solid fa-chart-line text-primary me-2"></i>
+                        Platform Highlights
+                    </h5>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Doctors</span>
+                        <strong>{{ doctor_count }}</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Patients</span>
+                        <strong>{{ patient_count }}</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Appointments</span>
+                        <strong>{{ appointment_count }}</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <span>Prescriptions</span>
+                        <strong>{{ prescription_count }}</strong>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Features -->
+    <div class="card border-0 shadow-sm mt-4">
+
+        <div class="card-header">
+            <h4 class="mb-0">
+                <i class="fa-solid fa-list-check text-primary me-2"></i>
+                Key Features
+            </h4>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-4">
+
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fa-solid fa-user-doctor fa-2x text-primary mb-3"></i>
+                        <h6>Doctor Management</h6>
+                        <p class="text-muted small">
+                            Maintain doctor profiles, schedules, and availability.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fa-solid fa-user-injured fa-2x text-success mb-3"></i>
+                        <h6>Patient Records</h6>
+                        <p class="text-muted small">
+                            Secure patient information and medical history.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fa-solid fa-calendar-check fa-2x text-warning mb-3"></i>
+                        <h6>Appointment Booking</h6>
+                        <p class="text-muted small">
+                            Book appointments with real-time slot availability.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fa-solid fa-file-prescription fa-2x text-danger mb-3"></i>
+                        <h6>Prescriptions</h6>
+                        <p class="text-muted small">
+                            Digital prescriptions and treatment records.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fa-solid fa-shield-halved fa-2x text-info mb-3"></i>
+                        <h6>Secure Authentication</h6>
+                        <p class="text-muted small">
+                            Role-based access for doctors and patients.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fa-solid fa-code fa-2x text-secondary mb-3"></i>
+                        <h6>REST APIs</h6>
+                        <p class="text-muted small">
+                            API-ready architecture for future integrations.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 {% endblock %}

@@ -1,118 +1,251 @@
 {% load static %}
 <nav class="main-navbar navbar navbar-expand-lg">
-  <div class="container-fluid px-3 px-lg-4">
+    <div class="container-fluid px-3 px-lg-4">
 
-    <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="{% url 'accounts:home' %}">
-      <div style="width:34px;height:34px;background:var(--primary);border-radius:9px;display:flex;align-items:center;justify-content:center;">
-        <i class="fa-solid fa-heart-pulse text-white" style="font-size:.95rem;"></i>
-      </div>
-      <span class="navbar-brand-text">Medi<span>Care</span></span>
-    </a>
+        <!-- Brand -->
+        <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none"
+           href="{% url 'accounts:home' %}">
+            <div style="width:34px;height:34px;background:var(--primary);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+                <i class="fa-solid fa-heart-pulse text-white"></i>
+            </div>
+            <span class="navbar-brand-text">
+                Medi<span>Care</span>
+            </span>
+        </a>
 
-    <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-      <i class="fa-solid fa-bars" style="color:var(--text);"></i>
-    </button>
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler border-0 shadow-none"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNav">
 
-    <div class="collapse navbar-collapse mt-3 mt-lg-0" id="mainNav">
-      <ul class="navbar-nav mx-auto gap-1">
-        <li class="nav-item">
-          <a class="nav-link px-3 fw-500" href="{% url 'accounts:home' %}">
-            <i class="fa fa-house me-1 text-muted" style="font-size:12px;"></i>Home
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link px-3" href="{% url 'accounts:about' %}">About</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link px-3" href="{% url 'accounts:contacts' %}">Contact</a>
-        </li>
+            <i class="fa-solid fa-bars"></i>
 
-        {% if user.is_authenticated %}
-          {% if user.profile.role == "DOCTOR" %}
-          <li class="nav-item">
-            <a class="nav-link px-3" href="{% url 'patients:patient_list' %}">
-              <i class="fa fa-users me-1 text-muted" style="font-size:12px;"></i>
-              Patients
-            </a>
-          </li>
-          {% elif user.profile.role == "PATIENT" %}
-          <li class="nav-item">
-            <a class="nav-link px-3" href="{% url 'doctors:doctor_list' %}">
-              <i class="fa fa-user-doctor me-1 text-muted" style="font-size:12px;"></i>
-              Doctors
-            </a>
-          </li>
-          {% endif %}
-        {% endif %}
-      </ul>
+        </button>
 
-      <ul class="navbar-nav align-items-lg-center gap-2 ms-lg-auto">
-        {% if user.is_authenticated %}
+        <div class="collapse navbar-collapse mt-3 mt-lg-0" id="mainNav">
 
-          {% if user.profile.role == 'DOCTOR' %}
-          <li class="nav-item">
-            <a class="nav-link px-2" href="{% url 'doctors:doctor_dashboard' %}">
-              <i class="fa fa-gauge me-1"></i>Dashboard
-            </a>
-          </li>
-          {% else %}
-          <li class="nav-item">
-            <a class="nav-link px-2" href="{% url 'patients:dashboard' %}">
-              <i class="fa fa-gauge me-1"></i>Dashboard
-            </a>
-          </li>
-          {% endif %}
+            <!-- Left Menu -->
+            <ul class="navbar-nav mx-auto gap-1">
 
-          <li class="nav-item">
-            <a class="nav-link position-relative px-2" href="#" title="Notifications">
-              <i class="fa-regular fa-bell" style="font-size:1.1rem;"></i>
-              {% if unread_notifications_count %}
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:10px;">
-                {{ unread_notifications_count }}
-              </span>
-              {% endif %}
-            </a>
-          </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3"
+                       href="{% url 'accounts:home' %}">
+                        <i class="fa fa-house me-1"></i>
+                        Home
+                    </a>
+                </li>
 
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 ps-2 pe-0" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-              {% if user.profile.photo %}
-                <img src="{{ user.profile.photo.url }}" class="avatar" alt="Avatar">
-              {% else %}
-                <div class="avatar-placeholder">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
-              {% endif %}
-              <span class="d-none d-md-inline fw-semibold" style="font-size:13px;">{{ user.get_full_name|default:user.username }}</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius:12px;min-width:180px;">
-              <li><h6 class="dropdown-header text-muted" style="font-size:11px;">{{ user.email }}</h6></li>
-              <li><hr class="dropdown-divider my-1"></li>
+                <li class="nav-item">
+                    <a class="nav-link px-3"
+                       href="{% url 'accounts:about' %}">
+                        About
+                    </a>
+                </li>
 
-              {% if user.profile.role == 'DOCTOR' %}
-              <li><a class="dropdown-item py-2" href="{% url 'accounts:profile' %}"><i class="fa fa-circle-user me-2 text-muted"></i>My Profile</a></li>
-              <li><a class="dropdown-item py-2" href="{% url 'doctors:slot_list' %}"><i class="fa fa-calendar-check me-2 text-muted"></i>Manage Slots</a></li>
-              {% else %}
-              <li><a class="dropdown-item py-2" href="{% url 'accounts:profile' %}"><i class="fa fa-circle-user me-2 text-muted"></i>My Profile</a></li>
-              <li><a class="dropdown-item py-2" href="{% url 'patients:appointment_history' %}"><i class="fa fa-calendar me-2 text-muted"></i>Appointments</a></li>
-              {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link px-3"
+                       href="{% url 'accounts:contacts' %}">
+                        Contact
+                    </a>
+                </li>
 
-              <li><hr class="dropdown-divider my-1"></li>
-              <li>
-                <a class="dropdown-item py-2 text-danger" href="{% url 'accounts:logout' %}">
-                  <i class="fa fa-right-from-bracket me-2"></i>Sign Out
-                </a>
-              </li>
+                {% if user.is_authenticated %}
+
+                    {% if doctor %}
+                    <li class="nav-item">
+                        <a class="nav-link px-3"
+                           href="{% url 'patients:patient_list' %}">
+                            <i class="fa fa-users me-1"></i>
+                            Patients
+                        </a>
+                    </li>
+                    {% elif patient %}
+                    <li class="nav-item">
+                        <a class="nav-link px-3"
+                           href="{% url 'doctors:doctor_list' %}">
+                            <i class="fa fa-user-doctor me-1"></i>
+                            Doctors
+                        </a>
+                    </li>
+                    {% endif %}
+
+                {% endif %}
+
             </ul>
-          </li>
 
-        {% else %}
-          <li class="nav-item">
-            <a class="btn btn-outline-primary btn-sm px-3" href="{% url 'accounts:login' %}">Sign In</a>
-          </li>
-          <li class="nav-item">
-            <a class="btn btn-primary btn-sm px-3" href="{% url 'accounts:register' %}">Register</a>
-          </li>
-        {% endif %}
-      </ul>
+            <!-- Right Menu -->
+            <ul class="navbar-nav align-items-lg-center gap-2 ms-lg-auto">
+
+                {% if user.is_authenticated %}
+
+                    {% if doctor %}
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           href="{% url 'doctors:doctor_dashboard' %}">
+                            <i class="fa fa-gauge me-1"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    {% elif patient %}
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           href="{% url 'patients:dashboard' %}">
+                            <i class="fa fa-gauge me-1"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <!-- Notifications -->
+                     <li class="nav-item dropdown">
+                        <a class="nav-link position-relative" href="#" data-bs-toggle="dropdown">
+                            <i class="fa-regular fa-bell"></i>
+                            {% if unread_notifications_count %}
+                            <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle">
+                                {{ unread_notifications_count }}
+                            </span>
+                            {% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                            {% for notification in navbar_notifications %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'notifications:read' notification.pk %}">
+                                    <strong>{{ notification.title }}</strong>
+                                    <br>
+                                    <small>{{ notification.message }}</small>
+                                </a>
+                            </li>
+                            {% empty %}
+                            <li>
+                                <span class="dropdown-item text-muted">
+                                    No notifications
+                                </span>
+                            </li>
+                            {% endfor %}
+                            <li><hr></li>
+                            <li>
+                                <a class="dropdown-item text-center" href="{% url 'notifications:list' %}">
+                                    View All
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Profile -->
+                    <li class="nav-item dropdown">
+
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
+                           href="#"
+                           data-bs-toggle="dropdown">
+
+                            {% if user.profile.image %}
+                                <img src="{{ user.profile.image.url }}"
+                                     class="avatar"
+                                     alt="Profile">
+                            {% else %}
+                                <div class="avatar-placeholder">
+                                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                                </div>
+                            {% endif %}
+
+                            <span class="d-none d-md-inline fw-semibold">
+                                {{ user.get_full_name|default:user.username }}
+                            </span>
+
+                        </a>
+
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+
+                            <li>
+                                <h6 class="dropdown-header">
+                                    {{ user.email }}
+                                </h6>
+                            </li>
+
+                            <li><hr class="dropdown-divider"></li>
+
+                            <li>
+                                <a class="dropdown-item"
+                                   href="{% url 'accounts:profile' %}">
+                                    <i class="fa fa-circle-user me-2"></i>
+                                    My Profile
+                                </a>
+                            </li>
+
+                            {% if doctor %}
+
+                            <li>
+                                <a class="dropdown-item"
+                                   href="{% url 'doctors:slot_list' %}">
+                                    <i class="fa fa-calendar-check me-2"></i>
+                                    Manage Slots
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item"
+                                   href="{% url 'doctors:appointment_history' %}">
+                                    <i class="fa fa-calendar-days me-2"></i>
+                                    Appointments
+                                </a>
+                            </li>
+
+                            {% elif patient %}
+
+                            <li>
+                                <a class="dropdown-item"
+                                   href="{% url 'patients:appointment_history' %}">
+                                    <i class="fa fa-calendar me-2"></i>
+                                    Appointment History
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item"
+                                   href="{% url 'doctors:doctor_list' %}">
+                                    <i class="fa fa-user-doctor me-2"></i>
+                                    Find Doctors
+                                </a>
+                            </li>
+
+                            {% endif %}
+
+                            <li><hr class="dropdown-divider"></li>
+
+                            <li>
+                                <a class="dropdown-item text-danger"
+                                   href="{% url 'accounts:logout' %}">
+                                    <i class="fa fa-right-from-bracket me-2"></i>
+                                    Logout
+                                </a>
+                            </li>
+
+                        </ul>
+
+                    </li>
+
+                {% else %}
+
+                    <li class="nav-item">
+                        <a class="btn btn-outline-primary btn-sm"
+                           href="{% url 'accounts:login' %}">
+                            Sign In
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="btn btn-primary btn-sm"
+                           href="{% url 'accounts:register' %}">
+                            Register
+                        </a>
+                    </li>
+
+                {% endif %}
+
+            </ul>
+
+        </div>
+
     </div>
-  </div>
 </nav>

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Notifications
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">
+            <i class="fa-solid fa-bell text-primary me-2"></i>
+            Notifications
+        </h2>
+
+        {% if notifications %}
+        <a href="{% url 'notifications:mark_all_read' %}"
+           class="btn btn-outline-primary btn-sm">
+            Mark All as Read
+        </a>
+        {% endif %}
+    </div>
+
+    {% if notifications %}
+
+    <div class="card shadow-sm border-0">
+
+        <div class="list-group list-group-flush">
+
+            {% for notification in notifications %}
+
+            <div class="list-group-item py-3">
+
+                <div class="d-flex justify-content-between">
+
+                    <div>
+
+                        <h6 class="mb-1">
+                            {{ notification.title }}
+                        </h6>
+
+                        <p class="mb-1 text-muted">
+                            {{ notification.message }}
+                        </p>
+
+                        <small class="text-secondary">
+                            {{ notification.created_at|timesince }} ago
+                        </small>
+
+                    </div>
+
+                    {% if not notification.is_read %}
+                        <span class="badge bg-danger align-self-start">
+                            New
+                        </span>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body text-center py-5">
+
+            <i class="fa-regular fa-bell-slash fa-4x text-muted mb-3"></i>
+
+            <h4>No Notifications</h4>
+
+            <p class="text-muted">
+                You're all caught up.
+            </p>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
