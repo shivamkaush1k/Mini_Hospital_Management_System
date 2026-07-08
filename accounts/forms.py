@@ -33,11 +33,9 @@ class UserRegisterForm(UserCreationForm):
 
         return email
 
-
 class UserUpdateForm(forms.ModelForm):
 
     class Meta:
-
         model = User
 
         fields = (
@@ -47,27 +45,28 @@ class UserUpdateForm(forms.ModelForm):
         )
 
         widgets = {
-
             "first_name": forms.TextInput(
-                attrs={
-                    "class": "form-control"
-                }
+                attrs={"class": "form-control"}
             ),
-
             "last_name": forms.TextInput(
-                attrs={
-                    "class": "form-control"
-                }
+                attrs={"class": "form-control"}
             ),
-
             "email": forms.EmailInput(
-                attrs={
-                    "class": "form-control"
-                }
+                attrs={"class": "form-control"}
             ),
-
         }
 
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+
+        if User.objects.exclude(
+            pk=self.instance.pk
+        ).filter(email=email).exists():
+            raise forms.ValidationError(
+                "Email already exists."
+            )
+
+        return email
 
 class ProfileForm(forms.ModelForm):
 
@@ -76,25 +75,14 @@ class ProfileForm(forms.ModelForm):
         model = Profile
 
         fields = (
-
-            "role",
-
             "image",
-
             "phone",
-
             "gender",
-
             "date_of_birth",
-
             "address",
-
             "city",
-
             "state",
-
             "country",
-
             "pincode",
 
         )

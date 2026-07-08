@@ -277,3 +277,10 @@ footer { background: #212529; color: #fff; padding: 30px 0; }
 @media (prefers-reduced-motion: reduce) {
   .card, .sidebar { transition: none; }
 }
+.errorlist{
+    color:#dc3545;
+    list-style:none;
+    padding-left:0;
+    margin-top:5px;
+    font-size:.875rem;
+}

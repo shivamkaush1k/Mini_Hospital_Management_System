@@ -75,6 +75,17 @@
     {% elif patient %}
         {% include "patients/patient_profile.html" %}
     {% endif %}
+    {% if user_form.errors %}
+<div class="alert alert-danger">
+    {{ user_form.errors }}
+</div>
+{% endif %}
+
+{% if profile_form.errors %}
+<div class="alert alert-danger">
+    {{ profile_form.errors }}
+</div>
+{% endif %}
 
     <!-- Edit Profile -->
     <div class="card shadow border-0 mt-4 form-card" id="edit-profile">

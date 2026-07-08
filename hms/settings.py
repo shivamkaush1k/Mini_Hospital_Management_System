@@ -1,3 +1,5 @@
+import cloudinary
+
 from pathlib import Path
 from decouple import config, Csv
 import os
@@ -157,6 +159,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # ======================================================
 # MEDIA FILES
 # ======================================================
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": config("CLOUDINARY_CLOUD_NAME"),
+    "API_KEY": config("CLOUDINARY_API_KEY"),
+    "API_SECRET": config("CLOUDINARY_API_SECRET"),
+}
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -165,6 +172,7 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
 # ======================================================
 # DEFAULT PRIMARY KEY
 # ======================================================
@@ -269,9 +277,10 @@ GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI")
 GOOGLE_SCOPES = config("GOOGLE_SCOPES").split(",")
 
 LOG_LEVEL = config("LOG_LEVEL", default="INFO")
+MEDIA_URL = "/media/"
 
-CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": config("CLOUDINARY_CLOUD_NAME"),
-    "API_KEY": config("CLOUDINARY_API_KEY"),
-    "API_SECRET": config("CLOUDINARY_API_SECRET"),
-}
+
+STATIC_URL = "static/"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]

@@ -307,24 +307,48 @@ def dashboard(request):
 # -----------------------
 # PROFILE (VIEW + EDIT)
 # -----------------------
+
 @login_required
 def profile(request):
+    profile_obj = request.user.profile
+    doctor = getattr(request.user, "doctor", None)
+    patient = getattr(request.user, "patient", None)
+
     if request.method == "POST":
-        user_form = UserUpdateForm(request.POST, instance=request.user)
-        profile_form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        user_form = UserUpdateForm(
+            request.POST,
+            instance=request.user
+        )
+
+        profile_form = ProfileForm(
+            request.POST,
+            request.FILES,
+            instance=profile_obj
+        )
+
+        # Debug
+        print("USER FORM ERRORS:", user_form.errors)
+        print("PROFILE FORM ERRORS:", profile_form.errors)
 
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-            messages.success(request, "Profile updated successfully.")
+
+            messages.success(
+                request,
+                "Profile updated successfully."
+            )
+
             return redirect("accounts:profile")
+
+        messages.error(
+            request,
+            "Please correct the errors below."
+        )
+
     else:
         user_form = UserUpdateForm(instance=request.user)
-        profile_form = ProfileForm(instance=request.user.profile)
-
-    profile_obj = getattr(request.user, "profile", None)
-    doctor = getattr(request.user, "doctor", None)
-    patient = getattr(request.user, "patient", None)
+        profile_form = ProfileForm(instance=profile_obj)
 
     context = {
         "user_form": user_form,
@@ -334,54 +358,78 @@ def profile(request):
         "patient": patient,
     }
 
-    # Role-specific stats + recent activity, computed here so the
-    # template only ever has to render values, never query.
-    if doctor is not None:
-        appointments = Appointment.objects.filter(slot__doctor=doctor)
+    if doctor:
+        appointments = Appointment.objects.filter(
+            slot__doctor=doctor
+        )
 
         context.update({
-            "total_patients": appointments.values("patient").distinct().count(),
-            "total_appointments": appointments.count(),
-            "completed_appointments": appointments.filter(
-                status=Appointment.Status.COMPLETED
-            ).count(),
-            "available_slots": doctor.slots.filter(
-                is_active=True
-            ).exclude(
-                appointments__status__in=[
-                    Appointment.Status.PENDING,
-                    Appointment.Status.COMPLETED,
-                ]
-            ).distinct().count(),
-            "recent_appointments": (
-                appointments
-                .select_related("patient__user")
-                .order_by("-appointment_date")[:5]
-            ),
+            "total_patients":
+                appointments.values("patient").distinct().count(),
+
+            "total_appointments":
+                appointments.count(),
+
+            "completed_appointments":
+                appointments.filter(
+                    status=Appointment.Status.COMPLETED
+                ).count(),
+
+            "available_slots":
+                doctor.slots.filter(
+                    is_active=True
+                ).exclude(
+                    appointments__status__in=[
+                        Appointment.Status.PENDING,
+                        Appointment.Status.COMPLETED,
+                    ]
+                ).distinct().count(),
+
+            "recent_appointments":
+                appointments.select_related(
+                    "patient__user"
+                ).order_by(
+                    "-appointment_date"
+                )[:5],
         })
 
-    elif patient is not None:
+    elif patient:
         appointments = patient.appointments.all()
-        prescriptions = Prescription.objects.filter(appointment__patient=patient)
+
+        prescriptions = Prescription.objects.filter(
+            appointment__patient=patient
+        )
 
         context.update({
-            "total_appointments": appointments.count(),
-            "upcoming_appointments": appointments.filter(
-                status=Appointment.Status.PENDING
-            ).count(),
-            "completed_appointments": appointments.filter(
-                status=Appointment.Status.COMPLETED
-            ).count(),
-            "prescriptions_count": prescriptions.count(),
-            "recent_appointments": (
-                appointments
-                .select_related("slot__doctor__user")
-                .order_by("-appointment_date")[:5]
-            ),
+            "total_appointments":
+                appointments.count(),
+
+            "upcoming_appointments":
+                appointments.filter(
+                    status=Appointment.Status.PENDING
+                ).count(),
+
+            "completed_appointments":
+                appointments.filter(
+                    status=Appointment.Status.COMPLETED
+                ).count(),
+
+            "prescriptions_count":
+                prescriptions.count(),
+
+            "recent_appointments":
+                appointments.select_related(
+                    "slot__doctor__user"
+                ).order_by(
+                    "-appointment_date"
+                )[:5],
         })
 
-    return render(request, "accounts/profile.html", context)
-
+    return render(
+        request,
+        "accounts/profile.html",
+        context,
+    )
 
 # -----------------------
 # USER MANAGEMENT (ADMIN)
