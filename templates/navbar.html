@@ -88,8 +88,8 @@
               <li><hr class="dropdown-divider my-1"></li>
 
               {% if user.profile.role == 'DOCTOR' %}
-              <li><a class="dropdown-item py-2" href="{% url 'doctors:doctor_profile' %}"><i class="fa fa-circle-user me-2 text-muted"></i>My Profile</a></li>
-              <li><a class="dropdown-item py-2" href="{% url 'doctors:doctor_slots' %}"><i class="fa fa-calendar-check me-2 text-muted"></i>Manage Slots</a></li>
+              <li><a class="dropdown-item py-2" href="{% url 'accounts:profile' %}"><i class="fa fa-circle-user me-2 text-muted"></i>My Profile</a></li>
+              <li><a class="dropdown-item py-2" href="{% url 'doctors:slot_list' %}"><i class="fa fa-calendar-check me-2 text-muted"></i>Manage Slots</a></li>
               {% else %}
               <li><a class="dropdown-item py-2" href="{% url 'accounts:profile' %}"><i class="fa fa-circle-user me-2 text-muted"></i>My Profile</a></li>
               <li><a class="dropdown-item py-2" href="{% url 'patients:appointment_history' %}"><i class="fa fa-calendar me-2 text-muted"></i>Appointments</a></li>
