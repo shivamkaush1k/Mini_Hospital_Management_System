@@ -307,82 +307,109 @@ def dashboard(request):
 # -----------------------
 # PROFILE (VIEW + EDIT)
 # -----------------------
+# @login_required
+# def profile(request):
+#     if request.method == "POST":
+#         user_form = UserUpdateForm(request.POST, instance=request.user)
+#         profile_form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
+
+#         if user_form.is_valid() and profile_form.is_valid():
+#             user_form.save()
+#             profile_form.save()
+#             messages.success(request, "Profile updated successfully.")
+#             return redirect("accounts:profile")
+#     else:
+#         user_form = UserUpdateForm(instance=request.user)
+#         profile_form = ProfileForm(instance=request.user.profile)
+
+#     profile_obj = getattr(request.user, "profile", None)
+#     doctor = getattr(request.user, "doctor", None)
+#     patient = getattr(request.user, "patient", None)
+
+#     context = {
+#         "user_form": user_form,
+#         "profile_form": profile_form,
+#         "profile": profile_obj,
+#         "doctor": doctor,
+#         "patient": patient,
+#     }
+
+#     # Role-specific stats + recent activity, computed here so the
+#     # template only ever has to render values, never query.
+#     if doctor is not None:
+#         appointments = Appointment.objects.filter(slot__doctor=doctor)
+
+#         context.update({
+#             "total_patients": appointments.values("patient").distinct().count(),
+#             "total_appointments": appointments.count(),
+#             "completed_appointments": appointments.filter(
+#                 status=Appointment.Status.COMPLETED
+#             ).count(),
+#             "available_slots": doctor.slots.filter(
+#                 is_active=True
+#             ).exclude(
+#                 appointments__status__in=[
+#                     Appointment.Status.PENDING,
+#                     Appointment.Status.COMPLETED,
+#                 ]
+#             ).distinct().count(),
+#             "recent_appointments": (
+#                 appointments
+#                 .select_related("patient__user")
+#                 .order_by("-appointment_date")[:5]
+#             ),
+#         })
+
+#     elif patient is not None:
+#         appointments = patient.appointments.all()
+#         prescriptions = Prescription.objects.filter(appointment__patient=patient)
+
+#         context.update({
+#             "total_appointments": appointments.count(),
+#             "upcoming_appointments": appointments.filter(
+#                 status=Appointment.Status.PENDING
+#             ).count(),
+#             "completed_appointments": appointments.filter(
+#                 status=Appointment.Status.COMPLETED
+#             ).count(),
+#             "prescriptions_count": prescriptions.count(),
+#             "recent_appointments": (
+#                 appointments
+#                 .select_related("slot__doctor__user")
+#                 .order_by("-appointment_date")[:5]
+#             ),
+#         })
+
+#     return render(request, "accounts/profile.html", context)
+
 @login_required
 def profile(request):
     if request.method == "POST":
+        print("=" * 50)
+        print("FILES:", request.FILES)
+
         user_form = UserUpdateForm(request.POST, instance=request.user)
-        profile_form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        profile_form = ProfileForm(
+            request.POST,
+            request.FILES,
+            instance=request.user.profile
+        )
+
+        print("User Form Valid:", user_form.is_valid())
+        print("Profile Form Valid:", profile_form.is_valid())
+
+        print("User Errors:", user_form.errors)
+        print("Profile Errors:", profile_form.errors)
 
         if user_form.is_valid() and profile_form.is_valid():
+            profile = profile_form.save()
+            print("Saved image:", profile.image)
+            print("Image URL:", profile.image.url if profile.image else "No Image")
+
             user_form.save()
-            profile_form.save()
+
             messages.success(request, "Profile updated successfully.")
             return redirect("accounts:profile")
-    else:
-        user_form = UserUpdateForm(instance=request.user)
-        profile_form = ProfileForm(instance=request.user.profile)
-
-    profile_obj = getattr(request.user, "profile", None)
-    doctor = getattr(request.user, "doctor", None)
-    patient = getattr(request.user, "patient", None)
-
-    context = {
-        "user_form": user_form,
-        "profile_form": profile_form,
-        "profile": profile_obj,
-        "doctor": doctor,
-        "patient": patient,
-    }
-
-    # Role-specific stats + recent activity, computed here so the
-    # template only ever has to render values, never query.
-    if doctor is not None:
-        appointments = Appointment.objects.filter(slot__doctor=doctor)
-
-        context.update({
-            "total_patients": appointments.values("patient").distinct().count(),
-            "total_appointments": appointments.count(),
-            "completed_appointments": appointments.filter(
-                status=Appointment.Status.COMPLETED
-            ).count(),
-            "available_slots": doctor.slots.filter(
-                is_active=True
-            ).exclude(
-                appointments__status__in=[
-                    Appointment.Status.PENDING,
-                    Appointment.Status.COMPLETED,
-                ]
-            ).distinct().count(),
-            "recent_appointments": (
-                appointments
-                .select_related("patient__user")
-                .order_by("-appointment_date")[:5]
-            ),
-        })
-
-    elif patient is not None:
-        appointments = patient.appointments.all()
-        prescriptions = Prescription.objects.filter(appointment__patient=patient)
-
-        context.update({
-            "total_appointments": appointments.count(),
-            "upcoming_appointments": appointments.filter(
-                status=Appointment.Status.PENDING
-            ).count(),
-            "completed_appointments": appointments.filter(
-                status=Appointment.Status.COMPLETED
-            ).count(),
-            "prescriptions_count": prescriptions.count(),
-            "recent_appointments": (
-                appointments
-                .select_related("slot__doctor__user")
-                .order_by("-appointment_date")[:5]
-            ),
-        })
-
-    return render(request, "accounts/profile.html", context)
-
-
 # -----------------------
 # USER MANAGEMENT (ADMIN)
 # -----------------------
