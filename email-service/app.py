@@ -78,7 +78,7 @@ def send_email_api():
         )
     elif trigger == "APPOINTMENT_REMINDER":
         subject = body.get("subject","Appointment Reminder")
-        html = render_template("remainder.html",{"patient": body.get("patient", "Patient"),"doctor": body.get("doctor", "Doctor"),"date": body.get("date", ""),"time": body.get("time", ""),}
+        html = render_template("reminder.html",{"patient": body.get("patient", "Patient"),"doctor": body.get("doctor", "Doctor"),"date": body.get("date", ""),"time": body.get("time", ""),}
                                )
 
     else:

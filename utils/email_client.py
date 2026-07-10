@@ -3,7 +3,7 @@ import requests
 
 EMAIL_SERVICE_URL = os.getenv(
     "EMAIL_SERVICE_URL",
-    "http://localhost:10000/send-email"
+    "https://mini-hms-email-service.onrender.com/send-email"
 )
 
 

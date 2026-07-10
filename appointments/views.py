@@ -15,9 +15,6 @@ from utils.email_client import send_email
 from utils.google_calendar import create_appointment_events
 
 
-# ==========================================================
-# HELPERS
-# ==========================================================
 def _is_staff(user):
     return user.is_staff
 
@@ -58,16 +55,6 @@ def _can_cancel_appointment(user, appointment):
     return False
 
 
-# NOTE: capacity and double-booking checks now live entirely on
-# DoctorSlot.available_times() / is_full (see doctors/models.py), which is
-# the single source of truth for what's bookable. There's no more
-# _slot_has_capacity() or _appointment_time_taken() helper here — they
-# referenced fields (max_patients) that no longer exist on DoctorSlot.
-
-
-# ==========================================================
-# APPOINTMENT LIST
-# ==========================================================
 @login_required
 def appointment_list(request):
     user = request.user
@@ -121,9 +108,6 @@ def appointment_list(request):
     )
 
 
-# ==========================================================
-# BOOK APPOINTMENT
-# ==========================================================
 @login_required
 @transaction.atomic
 def book_appointment_form(request, doctor_id):
@@ -209,9 +193,6 @@ def book_appointment_form(request, doctor_id):
     )
 
 
-# ==========================================================
-# APPOINTMENT DETAIL
-# ==========================================================
 @login_required
 def appointment_detail(request, pk):
     appointment = get_object_or_404(
@@ -232,10 +213,6 @@ def appointment_detail(request, pk):
         {"appointment": appointment},
     )
 
-
-# ==========================================================
-# UPDATE STATUS
-# ==========================================================
 @login_required
 def update_status(request, pk):
     appointment = get_object_or_404(
@@ -275,9 +252,6 @@ def update_status(request, pk):
     )
 
 
-# ==========================================================
-# CANCEL APPOINTMENT
-# ==========================================================
 @login_required
 def cancel_appointment(request, pk):
     appointment = get_object_or_404(
@@ -313,9 +287,6 @@ def cancel_appointment(request, pk):
     )
 
 
-# ==========================================================
-# DELETE APPOINTMENT
-# ==========================================================
 @login_required
 def delete_appointment(request, pk):
     appointment = get_object_or_404(
@@ -339,9 +310,6 @@ def delete_appointment(request, pk):
     )
 
 
-# ==========================================================
-# DOCTOR QUEUE
-# ==========================================================
 @login_required
 def doctor_queue(request):
     if not _is_doctor(request.user):
@@ -362,9 +330,6 @@ def doctor_queue(request):
     )
 
 
-# ==========================================================
-# PATIENT APPOINTMENTS
-# ==========================================================
 @login_required
 def my_appointments(request):
     if not _is_patient(request.user):
@@ -382,9 +347,6 @@ def my_appointments(request):
     )
 
 
-# ==========================================================
-# TODAY'S APPOINTMENTS
-# ==========================================================
 @login_required
 def today_appointments(request):
     if not _is_doctor(request.user):
@@ -406,9 +368,6 @@ def today_appointments(request):
     )
 
 
-# ==========================================================
-# AJAX: DOCTOR SLOTS BY DATE
-# ==========================================================
 @login_required
 def doctor_slots_ajax(request, doctor_id):
 
@@ -429,12 +388,9 @@ def doctor_slots_ajax(request, doctor_id):
 
     for slot in slots:
 
-        # Skip expired, full, or inactive sessions
         if slot.current_status != "Available":
             continue
 
-        # Reuse the model's own time-generation logic instead of
-        # duplicating the consultation/buffer math here.
         times = [
             {
                 "value": t.strftime("%H:%M"),
@@ -455,7 +411,3 @@ def doctor_slots_ajax(request, doctor_id):
 
     return JsonResponse(data)
 
-
-# ==========================================================
-# PRESCRIPTION-RELATED VIEWS UNCHANGED — see doctors/views.py
-# ==========================================================
