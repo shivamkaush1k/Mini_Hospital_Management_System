@@ -35,6 +35,7 @@ def send_email(recipient, subject, html):
     message["To"] = recipient
 
     message.attach(MIMEText(html, "html"))
+    print("Connecting to SMTP...")
 
     with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
 
@@ -44,9 +45,11 @@ def send_email(recipient, subject, html):
             SMTP_USER,
             SMTP_PASSWORD,
         )
+        print("Logged in successfully")
 
         server.sendmail(
             FROM_EMAIL,
             recipient,
             message.as_string(),
         )
+        print("Email sent")

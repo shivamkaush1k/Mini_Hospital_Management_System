@@ -61,7 +61,7 @@
               </div>
             </div>
           </div>
-          <input type="hidden" name="role" id="roleInput" value="{{ request.POST.role|default:profile_form.role.value|default:'PATIENT' }}">
+          <input type="hidden" name="role" id="roleInput" value="{{ request.POST.role|default:'PATIENT' }}">
         </div>
 
         <h6 class="fw-bold mb-3" style="color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase;">

@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from appointments.models import Appointment
 from .forms import PrescriptionForm, PrescriptionMedicineFormSet, PrescriptionSearchForm
 from .models import Prescription
+from utils.email_client import send_email
 
 
 def _is_staff(user):
@@ -148,6 +149,15 @@ def prescription_create(request, appointment_id):
 
             formset.instance = prescription
             formset.save()
+            transaction.on_commit(
+                lambda: send_email(
+                    trigger="PRESCRIPTION_CREATED",
+                    email=appointment.patient.user.email,
+                    subject="Your Prescription is Ready",
+                    patient=appointment.patient.user.get_full_name(),
+                    doctor=appointment.slot.doctor.user.get_full_name(),
+    )
+)
 
             messages.success(
                 request,

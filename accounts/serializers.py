@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-
+from utils.email_client import send_email
 from .models import Profile
 
 
@@ -37,7 +37,17 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
+
+        user = User.objects.create_user(**validated_data)
+
+        send_email(
+            trigger="SIGNUP_WELCOME",
+            email=user.email,
+            name=user.get_full_name() or user.username
+        )
+
+        return user
+
 
 
 class ProfileSerializer(serializers.ModelSerializer):

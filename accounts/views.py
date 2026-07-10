@@ -137,6 +137,15 @@ def register(request):
                     # Create User
                     # -------------------
                     user = user_form.save()
+                    from utils.email_client import send_email
+                    transaction.on_commit(
+                        lambda: send_email(
+                            trigger="SIGNUP_WELCOME",
+                            email=user.email,
+                            subject="Welcome to Mini HMS",
+                            name=user.get_full_name(),
+                            )
+                            )
 
                     # -------------------
                     # Create/Get Profile

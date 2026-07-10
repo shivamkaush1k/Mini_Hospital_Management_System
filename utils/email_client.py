@@ -3,20 +3,12 @@ import requests
 
 EMAIL_SERVICE_URL = os.getenv(
     "EMAIL_SERVICE_URL",
-    "http://localhost:3000/dev/send-email"
+    "http://localhost:10000/send-email"
 )
 
 
 def send_email(trigger, email, subject="", **kwargs):
-    """
-    Sends email request to serverless email service.
     
-    Args:
-        trigger (str): SIGNUP_WELCOME / BOOKING_CONFIRMATION
-        email (str): recipient email
-        subject (str): email subject
-        kwargs: additional template data
-    """
 
     payload = {
         "trigger": trigger,
@@ -43,3 +35,34 @@ def send_email(trigger, email, subject="", **kwargs):
             "success": False,
             "error": str(e)
         }
+    
+
+def send_email(trigger, email, subject="", **kwargs):
+
+    payload = {
+        "trigger": trigger,
+        "email": email,
+        "subject": subject,
+        **kwargs
+    }
+
+    print("=" * 50)
+    print("EMAIL PAYLOAD")
+    print(payload)
+    print("=" * 50)
+
+    try:
+        response = requests.post(
+            EMAIL_SERVICE_URL,
+            json=payload,
+            timeout=10
+        )
+
+        print("STATUS:", response.status_code)
+        print("BODY:", response.text)
+
+        return response.json()
+
+    except Exception as e:
+        print("EMAIL ERROR:", e)
+        raise

@@ -142,11 +142,6 @@ def book_appointment_form(request, doctor_id):
         form = AppointmentForm(request.POST, doctor=doctor)
 
         if form.is_valid():
-
-            # select_for_update locks this working session's row for the
-            # duration of the transaction, so two patients racing for the
-            # same appointment_time can't both succeed — the second one
-            # re-checks available_times() after the lock is acquired.
             slot = get_object_or_404(
                 DoctorSlot.objects.select_for_update().select_related(
                     "doctor__user"
@@ -182,30 +177,14 @@ def book_appointment_form(request, doctor_id):
                 )
 
             else:
-                appointment = Appointment.objects.create(
-                    patient=patient,
-                    slot=slot,
-                    appointment_date=appointment_date,
-                    appointment_time=appointment_time,
-                    reason=form.cleaned_data["reason"],
-                    status=Appointment.Status.PENDING,
-                )
-
+                appointment = Appointment.objects.create(patient=patient,slot=slot,appointment_date=appointment_date,appointment_time=appointment_time,reason=form.cleaned_data["reason"],status=Appointment.Status.PENDING,)
                 try:
                     create_appointment_events(appointment)
                 except Exception as e:
                     print("Calendar error:", e)
-
+                
                 try:
-                    send_email(
-                        trigger="BOOKING_CONFIRMATION",
-                        email=patient.user.email,
-                        subject="Appointment Confirmed",
-                        patient=patient.user.get_full_name(),
-                        doctor=doctor.user.get_full_name(),
-                        date=appointment.appointment_date.strftime("%d %b %Y"),
-                        time=appointment.appointment_time.strftime("%I:%M %p"),
-                    )
+                    transaction.on_commit(lambda: send_email(trigger="BOOKING_CONFIRMATION",email=patient.user.email,subject="Appointment Confirmed",patient=patient.user.get_full_name(),doctor=doctor.user.get_full_name(),date=appointment.appointment_date.strftime("%d %b %Y"),time=appointment.appointment_time.strftime("%I:%M %p"),))
                 except Exception as e:
                     print("Email error:", e)
 
@@ -272,6 +251,17 @@ def update_status(request, pk):
 
     if request.method == "POST" and form.is_valid():
         form.save()
+        appointment.refresh_from_db()
+        if appointment.status == Appointment.Status.COMPLETED:
+            transaction.on_commit(
+                lambda: send_email(
+                    trigger="APPOINTMENT_COMPLETED",
+                    email=appointment.patient.user.email,
+                    subject="Appointment Completed",
+                    patient=appointment.patient.user.get_full_name(),
+                    doctor=appointment.slot.doctor.user.get_full_name(),
+                    date=appointment.appointment_date.strftime("%d %b %Y"),
+                    time=appointment.appointment_time.strftime("%I:%M %p"),))
         messages.success(request, "Appointment updated.")
         return redirect("appointments:appointment_detail", pk=appointment.pk)
 
@@ -302,6 +292,17 @@ def cancel_appointment(request, pk):
     if request.method == "POST":
         appointment.status = Appointment.Status.CANCELLED
         appointment.save(update_fields=["status"])
+        transaction.on_commit(
+            lambda: send_email(
+                trigger="APPOINTMENT_CANCELLED",
+                email=appointment.patient.user.email,
+                subject="Appointment Cancelled",
+                patient=appointment.patient.user.get_full_name(),
+                doctor=appointment.slot.doctor.user.get_full_name(),
+                date=appointment.appointment_date.strftime("%d %b %Y"),
+                time=appointment.appointment_time.strftime("%I:%M %p"),
+                )
+                )
         messages.success(request, "Appointment cancelled.")
         return redirect("appointments:appointment_detail", pk=appointment.pk)
 

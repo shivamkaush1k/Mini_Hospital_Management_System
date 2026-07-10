@@ -32,6 +32,11 @@ def send_email_api():
 
     body = request.get_json(force=True)
 
+    print("=" * 50)
+    print(body)
+    print("=" * 50)
+
+
     trigger = body.get("trigger")
     recipient = body.get("email")
 
@@ -71,6 +76,10 @@ def send_email_api():
                 "time": body.get("time", "")
             }
         )
+    elif trigger == "APPOINTMENT_REMINDER":
+        subject = body.get("subject","Appointment Reminder")
+        html = render_template("remainder.html",{"patient": body.get("patient", "Patient"),"doctor": body.get("doctor", "Doctor"),"date": body.get("date", ""),"time": body.get("time", ""),}
+                               )
 
     else:
         return jsonify({
