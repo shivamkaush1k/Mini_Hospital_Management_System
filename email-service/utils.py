@@ -37,24 +37,28 @@ def send_email(recipient, subject, html):
 
     try:
         print("Connecting to SMTP...")
-
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as server:
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-
-            print("Logging in...")
-            server.login(SMTP_USER, SMTP_PASSWORD)
-
-            print("Sending email...")
-            server.sendmail(
-                FROM_EMAIL,
-                recipient,
-                message.as_string()
-            )
-
-            print("Email sent successfully.")
-
+        print("Opening SMTP connection...")
+        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30)
+        print("SMTP connection opened.")
+        
+        server.ehlo()
+        print("EHLO OK")
+        
+        server.starttls()
+        print("TLS started")
+        
+        server.ehlo()
+        
+        print("Logging in...")
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        
+        print("Login successful")
+        
+        server.sendmail(FROM_EMAIL,recipient,message.as_string())
+        
+        print("Mail sent")
+        server.quit()
+        
     except Exception as e:
         import traceback
         traceback.print_exc()
