@@ -27,7 +27,6 @@ def render_template(template_name, context):
 
 
 def send_email(recipient, subject, html):
-
     message = MIMEMultipart("alternative")
 
     message["Subject"] = subject
@@ -35,21 +34,28 @@ def send_email(recipient, subject, html):
     message["To"] = recipient
 
     message.attach(MIMEText(html, "html"))
-    print("Connecting to SMTP...")
 
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+    try:
+        print("Connecting to SMTP...")
 
-        server.starttls()
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
 
-        server.login(
-            SMTP_USER,
-            SMTP_PASSWORD,
-        )
-        print("Logged in successfully")
+            print("Logging in...")
+            server.login(SMTP_USER, SMTP_PASSWORD)
 
-        server.sendmail(
-            FROM_EMAIL,
-            recipient,
-            message.as_string(),
-        )
-        print("Email sent")
+            print("Sending email...")
+            server.sendmail(
+                FROM_EMAIL,
+                recipient,
+                message.as_string()
+            )
+
+            print("Email sent successfully.")
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise

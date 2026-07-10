@@ -6,44 +6,12 @@ EMAIL_SERVICE_URL = os.getenv(
     "https://mini-hms-email-service.onrender.com/send-email"
 )
 
-
 def send_email(trigger, email, subject="", **kwargs):
-    
-
     payload = {
         "trigger": trigger,
         "email": email,
         "subject": subject,
-        **kwargs
-    }
-
-    try:
-        response = requests.post(
-            EMAIL_SERVICE_URL,
-            json=payload,
-            timeout=10
-        )
-
-        if response.status_code != 200:
-            print("Email service error:", response.text)
-
-        return response.json()
-
-    except Exception as e:
-        print("Failed to send email:", str(e))
-        return {
-            "success": False,
-            "error": str(e)
-        }
-    
-
-def send_email(trigger, email, subject="", **kwargs):
-
-    payload = {
-        "trigger": trigger,
-        "email": email,
-        "subject": subject,
-        **kwargs
+        **kwargs,
     }
 
     print("=" * 50)
@@ -55,14 +23,23 @@ def send_email(trigger, email, subject="", **kwargs):
         response = requests.post(
             EMAIL_SERVICE_URL,
             json=payload,
-            timeout=10
+            timeout=30,
         )
 
         print("STATUS:", response.status_code)
         print("BODY:", response.text)
 
-        return response.json()
+        try:
+            return response.json()
+        except ValueError:
+            return {
+                "success": False,
+                "error": response.text,
+            }
 
-    except Exception as e:
+    except requests.RequestException as e:
         print("EMAIL ERROR:", e)
-        raise
+        return {
+            "success": False,
+            "error": str(e),
+        }

@@ -29,74 +29,39 @@ def home():
 
 @app.post("/send-email")
 def send_email_api():
-
-    body = request.get_json(force=True)
-
-    print("=" * 50)
-    print(body)
-    print("=" * 50)
-
-
-    trigger = body.get("trigger")
-    recipient = body.get("email")
-
-    if not recipient:
-        return jsonify({
-            "success": False,
-            "message": "Recipient email is required."
-        }), 400
-
-    if trigger == "SIGNUP_WELCOME":
-
-        subject = body.get(
-            "subject",
-            "Welcome to Mini Hospital Management System"
-        )
-
-        html = render_template(
-            "signup.html",
-            {
-                "name": body.get("name", "User")
-            }
-        )
-
-    elif trigger == "BOOKING_CONFIRMATION":
-
-        subject = body.get(
-            "subject",
-            "Appointment Confirmation"
-        )
-
-        html = render_template(
-            "booking.html",
-            {
-                "patient": body.get("patient", "Patient"),
-                "doctor": body.get("doctor", "Doctor"),
-                "date": body.get("date", ""),
-                "time": body.get("time", "")
-            }
-        )
-    elif trigger == "APPOINTMENT_REMINDER":
-        subject = body.get("subject","Appointment Reminder")
-        html = render_template("reminder.html",{"patient": body.get("patient", "Patient"),"doctor": body.get("doctor", "Doctor"),"date": body.get("date", ""),"time": body.get("time", ""),}
-                               )
-
-    else:
-        return jsonify({
-            "success": False,
-            "message": "Unknown trigger."
-        }), 400
-
-    send_email(
-        recipient,
-        subject,
-        html
-    )
-
-    return jsonify({
-        "success": True,
-        "message": "Email sent successfully."
-    })
+    try:
+        body = request.get_json(force=True)
+        trigger = body.get("trigger")
+        recipient = body.get("email")
+        
+        if not recipient:
+            return jsonify({
+                "success": False,
+                "message": "Recipient email is required."
+                }), 400
+        if trigger == "SIGNUP_WELCOME":
+            subject = body.get(
+                "subject",
+                "Welcome to Mini Hospital Management System"
+                )
+            
+            html = render_template("signup.html",{"name": body.get("name", "User")})
+        elif trigger == "BOOKING_CONFIRMATION":
+            subject = body.get("subject","Appointment Confirmation")
+            html = render_template("booking.html",{"patient": body.get("patient", "Patient"),"doctor": body.get("doctor", "Doctor"),"date": body.get("date", ""),"time": body.get("time", "")})
+        elif trigger == "APPOINTMENT_REMINDER":
+            subject = body.get("subject","Appointment Reminder")
+            html = render_template("reminder.html",{"patient": body.get("patient", "Patient"),"doctor": body.get("doctor", "Doctor"),"date": body.get("date", ""),"time": body.get("time", ""),})
+        else:
+            return jsonify({"success": False,"message": "Unknown trigger."}), 400
+        
+        send_email(recipient,subject,html)
+        return jsonify({"success": True,"message": "Email sent successfully."})
+    except Exception as e:
+        import traceback
+        
+        traceback.print_exc()
+        return jsonify({"success": False,"error": str(e)}), 500
 
 
 if __name__ == "__main__":
