@@ -1,3 +1,4 @@
+from notifications.utils import create_notification
 from doctors.models import Doctor
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -255,6 +256,7 @@ def add_medical_record(request):
         record = form.save(commit=False)
         record.patient = patient
         record.save()
+        create_notification(user=request.user,title="Medical Record Added",message="Your medical history has been updated.",url="/patients/medical-history/",)
         messages.success(request, "Medical history added.")
         return redirect("patients:medical_history")
 
@@ -269,6 +271,7 @@ def edit_medical_record(request, pk):
 
     if form.is_valid():
         form.save()
+        create_notification(user=request.user,title="Medical Record Updated",message="One of your medical records has been updated.",url="/patients/medical-history/",)
         messages.success(request, "Medical history updated.")
         return redirect("patients:medical_history")
 
@@ -288,6 +291,7 @@ def delete_medical_record(request, pk):
     if request.method == "POST":
 
         record.delete()
+        create_notification(user=request.user,title="Medical Record Deleted",message="A medical record has been removed.",url="/patients/medical-history/",)
 
         messages.success(
             request,

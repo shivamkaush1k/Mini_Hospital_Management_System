@@ -110,7 +110,7 @@
                         <ul class="dropdown-menu dropdown-menu-end shadow">
                             {% for notification in navbar_notifications %}
                             <li>
-                                <a class="dropdown-item" href="{% url 'notifications:read' notification.pk %}">
+                                <a class="dropdown-item" href="{% url 'notifications:mark_read' notification.pk %}">
                                     <strong>{{ notification.title }}</strong>
                                     <br>
                                     <small>{{ notification.message }}</small>

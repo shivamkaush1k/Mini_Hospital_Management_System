@@ -9,57 +9,153 @@ Notifications
 
 <div class="container py-4">
 
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">
-            <i class="fa-solid fa-bell text-primary me-2"></i>
-            Notifications
-        </h2>
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="fa-solid fa-bell text-primary me-2"></i>
+                Notifications
+            </h2>
+
+            <small class="text-muted">
+                {{ notifications|length }} Notification{{ notifications|length|pluralize }}
+            </small>
+        </div>
 
         {% if notifications %}
         <a href="{% url 'notifications:mark_all_read' %}"
-           class="btn btn-outline-primary btn-sm">
+           class="btn btn-outline-primary">
+            <i class="fa-solid fa-check-double me-1"></i>
             Mark All as Read
         </a>
         {% endif %}
+
     </div>
 
     {% if notifications %}
 
-    <div class="card shadow-sm border-0">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
 
         <div class="list-group list-group-flush">
 
             {% for notification in notifications %}
 
-            <div class="list-group-item py-3">
+            <a href="{{ notification.url|default:'#' }}"
+               class="list-group-item list-group-item-action py-3 text-decoration-none {% if not notification.is_read %}bg-light border-start border-4 border-primary{% endif %}">
 
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between align-items-start">
 
-                    <div>
+                    <!-- Left -->
+                    <div class="d-flex">
 
-                        <h6 class="mb-1">
-                            {{ notification.title }}
-                        </h6>
+                        <!-- Icon -->
+                        <div class="me-3 mt-1">
 
-                        <p class="mb-1 text-muted">
-                            {{ notification.message }}
-                        </p>
+                            {% if "Appointment" in notification.title %}
+                                <span class="bg-primary bg-opacity-10 rounded-circle d-flex justify-content-center align-items-center"
+                                      style="width:50px;height:50px;">
+                                    <i class="fa-solid fa-calendar-check text-primary"></i>
+                                </span>
 
-                        <small class="text-secondary">
-                            {{ notification.created_at|timesince }} ago
-                        </small>
+                            {% elif "Prescription" in notification.title %}
+                                <span class="bg-success bg-opacity-10 rounded-circle d-flex justify-content-center align-items-center"
+                                      style="width:50px;height:50px;">
+                                    <i class="fa-solid fa-file-prescription text-success"></i>
+                                </span>
+
+                            {% elif "Medical" in notification.title %}
+                                <span class="bg-danger bg-opacity-10 rounded-circle d-flex justify-content-center align-items-center"
+                                      style="width:50px;height:50px;">
+                                    <i class="fa-solid fa-notes-medical text-danger"></i>
+                                </span>
+
+                            {% elif "Profile" in notification.title %}
+                                <span class="bg-warning bg-opacity-10 rounded-circle d-flex justify-content-center align-items-center"
+                                      style="width:50px;height:50px;">
+                                    <i class="fa-solid fa-user text-warning"></i>
+                                </span>
+
+                            {% elif "Working Session" in notification.title %}
+                                <span class="bg-info bg-opacity-10 rounded-circle d-flex justify-content-center align-items-center"
+                                      style="width:50px;height:50px;">
+                                    <i class="fa-solid fa-clock text-info"></i>
+                                </span>
+
+                            {% elif "Welcome" in notification.title %}
+                                <span class="bg-secondary bg-opacity-10 rounded-circle d-flex justify-content-center align-items-center"
+                                      style="width:50px;height:50px;">
+                                    <i class="fa-solid fa-handshake text-secondary"></i>
+                                </span>
+
+                            {% else %}
+                                <span class="bg-secondary bg-opacity-10 rounded-circle d-flex justify-content-center align-items-center"
+                                      style="width:50px;height:50px;">
+                                    <i class="fa-solid fa-bell text-secondary"></i>
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                        <!-- Notification Body -->
+                        <div>
+
+                            <div class="d-flex align-items-center flex-wrap gap-2">
+
+                                <h5 class="mb-0 text-dark fw-semibold">
+                                    {{ notification.title }}
+                                </h5>
+
+                                {% if not notification.is_read %}
+                                    <span class="badge bg-primary">
+                                        New
+                                    </span>
+                                {% endif %}
+
+                            </div>
+
+                            <p class="text-muted mb-2 mt-1">
+                                {{ notification.message }}
+                            </p>
+
+                            <div class="small text-secondary">
+
+                                <i class="fa-regular fa-clock me-1"></i>
+
+                                {{ notification.created_at|timesince }} ago
+
+                                <span class="mx-2">•</span>
+
+                                {{ notification.created_at|date:"d M Y" }}
+
+                                <span class="mx-2">•</span>
+
+                                {{ notification.created_at|time:"h:i A" }}
+
+                            </div>
+
+                        </div>
 
                     </div>
 
-                    {% if not notification.is_read %}
-                        <span class="badge bg-danger align-self-start">
-                            New
-                        </span>
-                    {% endif %}
+                    <!-- Right -->
+                    <div class="text-end">
+
+                        {% if not notification.is_read %}
+                            <span class="rounded-circle bg-primary d-inline-block mb-3"
+                                  style="width:10px;height:10px;">
+                            </span>
+                        {% endif %}
+
+                        <div class="text-muted">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+
+                    </div>
 
                 </div>
 
-            </div>
+            </a>
 
             {% endfor %}
 
@@ -69,16 +165,24 @@ Notifications
 
     {% else %}
 
-    <div class="card border-0 shadow-sm">
+    <div class="card border-0 shadow-sm rounded-4">
 
-        <div class="card-body text-center py-5">
+        <div class="card-body py-5 text-center">
 
-            <i class="fa-regular fa-bell-slash fa-4x text-muted mb-3"></i>
+            <div class="mb-4">
+                <i class="fa-regular fa-bell-slash fa-5x text-secondary"></i>
+            </div>
 
-            <h4>No Notifications</h4>
+            <h3 class="fw-bold">
+                You're all caught up!
+            </h3>
 
-            <p class="text-muted">
-                You're all caught up.
+            <p class="text-muted mb-0">
+                You don't have any notifications yet.
+                <br>
+                New appointment updates, prescriptions,
+                medical records, and profile activities
+                will appear here.
             </p>
 
         </div>
@@ -88,5 +192,30 @@ Notifications
     {% endif %}
 
 </div>
+
+<style>
+
+.list-group-item{
+    transition:all .25s ease;
+}
+
+.list-group-item:hover{
+    background:#f8f9fa !important;
+    transform:translateX(3px);
+}
+
+.list-group-item h5{
+    transition:.2s;
+}
+
+.list-group-item:hover h5{
+    color:#0d6efd;
+}
+
+.badge{
+    font-size:.7rem;
+}
+
+</style>
 
 {% endblock %}

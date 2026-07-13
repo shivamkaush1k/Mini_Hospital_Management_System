@@ -1,4 +1,6 @@
+from django.db import transaction, IntegrityError
 from datetime import date
+from notifications.utils import  create_notification
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -108,6 +110,9 @@ def appointment_list(request):
     )
 
 
+
+
+
 @login_required
 @transaction.atomic
 def book_appointment_form(request, doctor_id):
@@ -138,6 +143,7 @@ def book_appointment_form(request, doctor_id):
             appointment_date = slot.date
             appointment_time = form.cleaned_data["appointment_time"]
 
+            # Slot availability
             if slot.current_status != "Available":
                 form.add_error(
                     "slot",
@@ -161,23 +167,104 @@ def book_appointment_form(request, doctor_id):
                 )
 
             else:
-                appointment = Appointment.objects.create(patient=patient,slot=slot,appointment_date=appointment_date,appointment_time=appointment_time,reason=form.cleaned_data["reason"],status=Appointment.Status.PENDING,)
-                try:
-                    create_appointment_events(appointment)
-                except Exception as e:
-                    print("Calendar error:", e)
-                
-                try:
-                    transaction.on_commit(lambda: send_email(trigger="BOOKING_CONFIRMATION",email=patient.user.email,subject="Appointment Confirmed",patient=patient.user.get_full_name(),doctor=doctor.user.get_full_name(),date=appointment.appointment_date.strftime("%d %b %Y"),time=appointment.appointment_time.strftime("%I:%M %p"),))
-                except Exception as e:
-                    print("Email error:", e)
 
-                messages.success(
-                    request,
-                    "Appointment booked successfully."
-                )
+                # Better user experience
+                existing = Appointment.objects.filter(
+                    slot=slot,
+                    appointment_date=appointment_date,
+                    appointment_time=appointment_time,
+                ).exists()
 
-                return redirect("appointments:my_appointments")
+                if existing:
+                    form.add_error(
+                        "appointment_time",
+                        "This appointment time has already been booked."
+                    )
+
+                else:
+                    try:
+
+                        appointment = Appointment.objects.create(
+                            patient=patient,
+                            slot=slot,
+                            appointment_date=appointment_date,
+                            appointment_time=appointment_time,
+                            reason=form.cleaned_data["reason"],
+                            status=Appointment.Status.PENDING,
+                        )
+
+                    except IntegrityError:
+                        form.add_error(
+                            "appointment_time",
+                            "Someone booked this time just now. Please choose another."
+                        )
+
+                    else:
+
+                        # --------------------
+                        # Notifications
+                        # --------------------
+
+                        create_notification(
+                            user=patient.user,
+                            title="Appointment Booked",
+                            message=(
+                                f"Your appointment with "
+                                f"Dr. {doctor.user.get_full_name()} "
+                                f"has been booked."
+                            ),
+                            url=f"/appointments/{appointment.pk}/",
+                        )
+
+                        create_notification(
+                            user=doctor.user,
+                            title="New Appointment",
+                            message=(
+                                f"{patient.user.get_full_name()} "
+                                f"booked an appointment."
+                            ),
+                            url=f"/appointments/{appointment.pk}/",
+                        )
+
+                        # --------------------
+                        # Google Calendar
+                        # --------------------
+
+                        try:
+                            create_appointment_events(appointment)
+                        except Exception as e:
+                            print("Calendar error:", e)
+
+                        # --------------------
+                        # Email
+                        # --------------------
+
+                        def send_booking_email():
+                            try:
+                                send_email(
+                                    trigger="BOOKING_CONFIRMATION",
+                                    email=patient.user.email,
+                                    subject="Appointment Confirmed",
+                                    patient=patient.user.get_full_name(),
+                                    doctor=doctor.user.get_full_name(),
+                                    date=appointment.appointment_date.strftime(
+                                        "%d %b %Y"
+                                    ),
+                                    time=appointment.appointment_time.strftime(
+                                        "%I:%M %p"
+                                    ),
+                                )
+                            except Exception as e:
+                                print("Email error:", e)
+
+                        transaction.on_commit(send_booking_email)
+
+                        messages.success(
+                            request,
+                            "Appointment booked successfully."
+                        )
+
+                        return redirect("appointments:my_appointments")
 
     else:
         form = AppointmentForm(doctor=doctor)
@@ -191,7 +278,6 @@ def book_appointment_form(request, doctor_id):
             "form": form,
         },
     )
-
 
 @login_required
 def appointment_detail(request, pk):
@@ -230,6 +316,7 @@ def update_status(request, pk):
         form.save()
         appointment.refresh_from_db()
         if appointment.status == Appointment.Status.COMPLETED:
+            create_notification(user=appointment.patient.user,title="Appointment Completed",message="Your appointment has been marked as completed.",url=f"/appointments/{appointment.pk}/",)
             transaction.on_commit(
                 lambda: send_email(
                     trigger="APPOINTMENT_COMPLETED",
@@ -266,6 +353,10 @@ def cancel_appointment(request, pk):
     if request.method == "POST":
         appointment.status = Appointment.Status.CANCELLED
         appointment.save(update_fields=["status"])
+        create_notification(user=appointment.patient.user,title="Appointment Cancelled",message="Your appointment has been cancelled.",url=f"/appointments/{appointment.pk}/",)
+        if hasattr(request.user, "patient"):
+            create_notification(user=appointment.slot.doctor.user,title="Appointment Cancelled",message=f"{appointment.patient.user.get_full_name()} cancelled the appointment.",url=f"/appointments/{appointment.pk}/",)
+
         transaction.on_commit(
             lambda: send_email(
                 trigger="APPOINTMENT_CANCELLED",

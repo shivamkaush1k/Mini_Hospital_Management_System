@@ -1,3 +1,4 @@
+from notifications.utils import create_notification
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -245,6 +246,8 @@ def slot_create(request):
         slot = form.save(commit=False)
         slot.doctor = request.user.doctor
         slot.save()
+        create_notification(user=request.user,title="Working Session Created",message="A new working session has been added.",url="/doctors/slots/",)
+        
 
         messages.success(
             request,
@@ -275,6 +278,7 @@ def slot_update(request, pk):
     if form.is_valid():
 
         form.save()
+        create_notification(user=request.user,title="Working Session Updated",message="Your working session has been updated.",url="/doctors/slots/",)
 
         messages.success(request,"Working session updated successfully.")
 
@@ -300,6 +304,7 @@ def slot_delete(request, pk):
     if request.method == "POST":
 
         slot.delete()
+        create_notification(user=request.user,title="Working Session Deleted",message="A working session has been deleted.",url="/doctors/slots/",)
 
         messages.success(request, "Slot deleted.")
 

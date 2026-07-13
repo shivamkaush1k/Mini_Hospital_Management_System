@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
-
+from notifications.utils import create_notification
 from appointments.models import Appointment
 from .forms import PrescriptionForm, PrescriptionMedicineFormSet, PrescriptionSearchForm
 from .models import Prescription
@@ -149,6 +149,7 @@ def prescription_create(request, appointment_id):
 
             formset.instance = prescription
             formset.save()
+            create_notification(user=appointment.patient.user,title="Prescription Ready",message="Your doctor has uploaded your prescription.",url=f"/prescriptions/{prescription.pk}/",)
             transaction.on_commit(
                 lambda: send_email(
                     trigger="PRESCRIPTION_CREATED",

@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404, redirect, render
-
+from notifications.utils import create_notification
 from appointments.models import Appointment
 from doctors.models import Doctor
 from patients.models import Patient
@@ -137,6 +137,7 @@ def register(request):
                     # Create User
                     # -------------------
                     user = user_form.save()
+                    create_notification(user=user,title="Welcome to Mini HMS",message="Your account has been created successfully.",)
                     from utils.email_client import send_email
                     transaction.on_commit(
                         lambda: send_email(
@@ -219,6 +220,7 @@ def register(request):
                                 "emergency_contact_phone"
                             ),
                         )
+                        create_notification(user=user,title="Welcome to Mini HMS",message="Your account has been created successfully.",url="profile",)
 
                 messages.success(
                     request,
@@ -342,6 +344,7 @@ def profile(request):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
+            create_notification(user=request.user,title="Profile Updated",message="Your profile has been updated successfully.",url="accounts/profile",)
 
             messages.success(
                 request,
@@ -434,11 +437,7 @@ def profile(request):
                 )[:5],
         })
 
-    return render(
-        request,
-        "accounts/profile.html",
-        context,
-    )
+    return render(request,"accounts/profile.html",context)
 
 # -----------------------
 # USER MANAGEMENT (ADMIN)
